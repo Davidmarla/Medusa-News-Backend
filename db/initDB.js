@@ -49,16 +49,18 @@ async function main() {
   `);
 
     await connection.query(`
-  CREATE TABLE keywords(
+    CREATE TABLE keywords(
       id INTEGER PRIMARY KEY AUTO_INCREMENT,
       keyword VARCHAR(20) UNIQUE NOT NULL
   )`);
 
     await connection.query(`
-  CREATE TABLE keyword_news(
-    FOREIGN KEY keyword_id REFERENCES keywords.id,
-    FOREIGN KEY news_id REFERENCES news.id
-  )`);
+    CREATE TABLE keyword_news(
+      keyword_id INTEGER NOT NULL,
+      news_id INTEGER NOT NULL,
+      FOREIGN KEY (keyword_id) REFERENCES keywords(id),
+      FOREIGN KEY (news_id) REFERENCES news(id)
+    )`);
   } catch (error) {
     console.error(error);
   } finally {
