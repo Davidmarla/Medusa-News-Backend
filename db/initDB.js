@@ -15,6 +15,8 @@ async function main() {
 
     console.log('Borrando tablas existentes...');
 
+    await connection.query('DROP TABLE IF EXISTS keyword_news;');
+    await connection.query('DROP TABLE IF EXISTS keywords;');
     await connection.query('DROP TABLE IF EXISTS news;');
     await connection.query('DROP TABLE IF EXISTS users;');
 
