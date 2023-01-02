@@ -15,6 +15,7 @@ async function main() {
 
     console.log('Borrando tablas existentes...');
 
+    await connection.query('DROP TABLE IF EXISTS news;');
     await connection.query('DROP TABLE IF EXISTS users;');
 
     console.log('Creando tablas...');
@@ -31,6 +32,18 @@ async function main() {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    await connection.query(`
+    CREATE TABLE news (
+      id INTEGER PRIMARY KEY AUTO_INCREMENT,
+      title VARCHAR(150) NOT NULL,
+      image VARCHAR(100) NOT NULL,
+      header VARCHAR(250) NOT NULL,
+      body TEXT NOT NULL,
+      date DATE NOT NULL,
+      user_id INT NOT NULL,
+      FOREIGN KEY (user_id) REFERENCES users(id)
+  );
+  `);
   } catch (error) {
     console.error(error);
   } finally {
