@@ -1,0 +1,28 @@
+{
+    "name": "proyecto_noticias_colaborativas",
+    "version": "1.0.0",
+    "description": "API para crear, listar y borrar noticias colaborativas",
+    "main": "initDB.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "dev": "nodemon server.js"
+    },
+    "author": "Ignacio Valls y David Martínez",
+    "license": "ISC",
+    "devDependencies": {
+        "eslint": "^8.30.0",
+        "nodemon": "^2.0.20",
+        "prettier": "^2.8.1"
+    },
+    "dependencies": {
+        "bcrypt": "^5.1.0",
+        "dotenv": "^16.0.3",
+        "express": "^4.18.2",
+        "express-fileupload": "^1.4.0",
+        "jsonwebtoken": "^9.0.0",
+        "morgan": "^1.10.0",
+        "mysql2": "^2.3.3",
+        "nanoid": "^2.1.11",
+        "sharp": "^0.31.3"
+    }
+}
