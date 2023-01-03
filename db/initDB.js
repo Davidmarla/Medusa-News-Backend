@@ -1,5 +1,4 @@
 require('dotenv').config();
-
 const { getConnection } = require('./db');
 
 async function main() {
