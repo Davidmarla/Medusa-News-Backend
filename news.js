@@ -2,7 +2,7 @@ const { getConnection } = require('./db/db');
 const joi = require('joi');
 
 let connection;
-const getnews = async (req, res) => {
+const getNews = async (req, res) => {
   connection = await getConnection();
   try {
     const news = await connection.query(`SELECT * FROM news;`);
@@ -74,6 +74,6 @@ const createNew = async (req, res) => {
 };
 
 module.exports = {
-  getnews,
+  getNews,
   createNew,
 };

@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const port = 8888;
-const { getnews, createNew } = require('./news');
+const { getNews, createNew } = require('./news');
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -10,7 +10,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 //endpoints NEWS
-app.get('/', getnews);
+app.get('/', getNews);
 app.post('/', createNew);
 
 app.listen(port, () => {
