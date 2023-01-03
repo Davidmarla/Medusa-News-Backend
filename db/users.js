@@ -2,12 +2,36 @@ const bcrypt = require('bcrypt');
 const { generateError } = require('../helpers');
 const { getConnection } = require('./db');
 
+//Devuelve la información pública de un usuario por su email
+const getUserByEmail = async (email) => {
+  let connection;
+
+  try {
+    connection = await getConnection();
+
+    const [result] = await connection.query(
+      `
+    SELECT * FROM users WHERE email = ?
+    `,
+      [email]
+    );
+
+    if (result.length === 0)
+      throw generateError('No hay ningún usuario con ese email', 404);
+
+    return result[0];
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
 //Crea un usuario en la BD y devuelve su id
 const createUser = async (user_name, email, password) => {
   let connection;
 
   try {
     connection = await getConnection();
+
     //Comprobar que no exista otro usuario con ese email
     const [user] = await connection.query(
       `
@@ -23,6 +47,7 @@ const createUser = async (user_name, email, password) => {
       );
     }
 
+    //Comprobar que no exista otro usuario con igual nombre de usuario
     const [user_nick] = await connection.query(
       `
       SELECT id FROM users WHERE user_name = ?
@@ -39,6 +64,7 @@ const createUser = async (user_name, email, password) => {
 
     //Encriptar la password
     const passwordHash = await bcrypt.hash(password, 8);
+
     //Crear el usuario
     const [newUser] = await connection.query(
       `
@@ -46,6 +72,7 @@ const createUser = async (user_name, email, password) => {
     `,
       [user_name, email, passwordHash]
     );
+
     //Devolver la id
     return newUser.insertId;
   } finally {
@@ -55,4 +82,5 @@ const createUser = async (user_name, email, password) => {
 
 module.exports = {
   createUser,
+  getUserByEmail,
 };

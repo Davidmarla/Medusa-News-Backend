@@ -7,7 +7,7 @@ const port = 8888;
 const { getNews, createNew } = require('./news');
 const app = express();
 
-const { newUserController } = require('./controllers/users');
+const { newUserController, loginController } = require('./controllers/users');
 
 app.use(morgan('dev'));
 
@@ -22,7 +22,7 @@ app.post('/', createNew);
 
 //Rutas de usuario
 app.post('/user', newUserController);
-//app.post('/login', loginController);
+app.post('/login', loginController);
 
 //Middleware que gestiona las rutas que no pasan por ninguna ruta definida
 app.use((req, res) => {
