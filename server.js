@@ -5,7 +5,12 @@ const { authUser } = require('./middlewares/auth');
 //const fileUpload = require('express-fileupload');
 const bodyParser = require('body-parser');
 const port = 8888;
-const { getNews, createNew } = require('./controllers/news');
+const {
+  getNews,
+  createNew,
+  getSingleNewController,
+  deleteNewController,
+} = require('./controllers/news');
 const app = express();
 
 const { newUserController, loginController } = require('./controllers/users');
@@ -19,12 +24,15 @@ app.use(bodyParser.json());
 //endpoints NEWS
 app.get('/', getNews);
 app.post('/', authUser, createNew);
+app.get('/new/:id', getSingleNewController);
+app.delete('/new/:id', authUser, deleteNewController);
 
-//Rutas de usuario
+//Endpoints de usuario
 app.post('/user', newUserController);
 app.post('/login', loginController);
+/* TODO: app.put('/profile/:id', authUser, updateUserProfile); */
 
-//Middleware que gestiona las rutas que no pasan por ninguna ruta definida
+//Middleware que gestiona rutas no definidas
 app.use((req, res) => {
   res.status(404).send({
     status: 'error',

@@ -1,8 +1,10 @@
 const jwt = require('jsonwebtoken');
 const { generateError } = require('../helpers');
+
 const authUser = (req, res, next) => {
   try {
     const { authorization } = req.headers;
+
     if (!authorization) {
       throw generateError('Falta la cabecera de autorización', 401);
     }
@@ -14,7 +16,7 @@ const authUser = (req, res, next) => {
     } catch {
       throw generateError('Token incorrecto, 401');
     }
-
+    console.log(token);
     //Metemos la información del token en la request para usarla en el controlador
     req.userId = token.id;
 
@@ -24,6 +26,7 @@ const authUser = (req, res, next) => {
     next(error);
   }
 };
+
 module.exports = {
   authUser,
 };
