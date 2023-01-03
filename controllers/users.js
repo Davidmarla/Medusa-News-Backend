@@ -1,9 +1,9 @@
-//const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt');
 const joi = require('joi');
-//const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 
 const { generateError } = require('../helpers');
-const { createUser } = require('../db/users');
+const { createUser, getUserByEmail } = require('../db/users');
 
 const newUserController = async (req, res, next) => {
   try {
@@ -36,6 +36,53 @@ const newUserController = async (req, res, next) => {
   }
 };
 
+const loginController = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    //Se valida el email y password
+    const schema = joi.object().keys({
+      email: joi.string().email().required(),
+      password: joi.string().min(6),
+    });
+
+    const validation = schema.validate({ email, password });
+
+    if (validation.error) {
+      throw generateError('Email o password incorrectos', 400);
+    }
+
+    //Recojo los datos de la BD del usuario con ese email
+    const user = await getUserByEmail(email);
+
+    //Compruebo que las contraseñas coinciden
+    const validPassword = await bcrypt.compare(password, user.password);
+
+    if (!validPassword) {
+      throw generateError('La contraseña no coincide', 401);
+    }
+
+    //Creo el payload del token
+    const payload = {
+      id: user.id,
+    };
+
+    //Firmo el token, válido por 30 días
+    const token = jwt.sign(payload, process.env.SECRET, {
+      expiresIn: '30d',
+    });
+
+    //Envío el token
+    res.send({
+      status: 'ok',
+      data: token,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   newUserController,
+  loginController,
 };

@@ -8,7 +8,7 @@ const port = 8888;
 
 const app = express();
 
-const { newUserController } = require('./controllers/users');
+const { newUserController, loginController } = require('./controllers/users');
 
 app.use(morgan('dev'));
 
@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 
 //Rutas de usuario
 app.post('/user', newUserController);
-//app.post('/login', loginController);
+app.post('/login', loginController);
 
 //Middleware que gestiona las rutas que no pasan por ninguna ruta definida
 app.use((req, res) => {
