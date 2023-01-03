@@ -2,7 +2,6 @@ const bcrypt = require('bcrypt');
 const { generateError } = require('../helpers');
 const { getConnection } = require('./db');
 
-//Devuelve la información pública de un usuario por su email
 const getUserByEmail = async (email) => {
   let connection;
 
@@ -24,6 +23,8 @@ const getUserByEmail = async (email) => {
     if (connection) connection.release();
   }
 };
+
+/* TODO: const getUserById = async (id) => {}; */
 
 //Crea un usuario en la BD y devuelve su id
 const createUser = async (user_name, email, password) => {
@@ -83,4 +84,5 @@ const createUser = async (user_name, email, password) => {
 module.exports = {
   createUser,
   getUserByEmail,
+  /* getUserbyId, */
 };
