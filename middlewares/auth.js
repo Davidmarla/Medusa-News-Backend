@@ -6,6 +6,7 @@ const authUser = (req, res, next) => {
     if (!authorization) {
       throw generateError('Falta la cabecera de autorización', 401);
     }
+
     //Comprobamos que el token sea correcto
     let token;
     try {
@@ -18,7 +19,7 @@ const authUser = (req, res, next) => {
     req.userId = token.id;
 
     //Saltamos al controlador
-    next(token.id);
+    next();
   } catch (error) {
     next(error);
   }

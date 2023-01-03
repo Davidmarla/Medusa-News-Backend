@@ -20,11 +20,11 @@ const getNews = async (req, res) => {
 const createNew = async (req, res) => {
   //TODO: Se necesita el user id para no meterlo a mano, tendra que pasarlo el meddlewere que comprueba que
   //esta autenticado
-
+  let connection = await getConnection();
   const title = req.body.title;
   const header = req.body.header;
   const body = req.body.body;
-  const user_id = req.body.user_id;
+  const user_id = req.userId;
   const date = req.body.date;
   const image = req.body.image;
   console.log('Log en createNew', user_id);
@@ -50,8 +50,6 @@ const createNew = async (req, res) => {
     res.status(500).send('test');
   }
   try {
-    let connection = await getConnection();
-
     await connection.query(
       `
       INSERT INTO news(title, image, header, body,user_id, date )
@@ -63,8 +61,8 @@ const createNew = async (req, res) => {
     throw generateError('Error en la base de datos', 500);
   } finally {
     connection.release();
-    res.status(201).send();
   }
+  res.status(201).send();
 };
 
 module.exports = {
