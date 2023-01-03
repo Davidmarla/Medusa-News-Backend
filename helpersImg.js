@@ -22,7 +22,7 @@ async function processAndSaveImage(uploadedImage) {
   }
 
   // Guardar la imagen en el directorio de subidas
-  const imageFileName = `${uuid.v4()}.jpg`;
+  const imageFileName = `${uuid.v4()}.jpeg`;
   await image.toFile(path.join(imageUploadPath, imageFileName));
 
   // Devolver el nombre con el que fue guardada

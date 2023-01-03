@@ -1,7 +1,7 @@
 const { getConnection } = require('../db/db');
 const joi = require('joi');
 const { generateError } = require('../helpers');
-
+// const { processAndSaveImage } = require('../helpersImg');
 let connection;
 const getNews = async (req, res) => {
   connection = await getConnection();
@@ -26,15 +26,12 @@ const createNew = async (req, res) => {
   const body = req.body.body;
   const user_id = req.userId;
   const date = req.body.date;
-  const image = req.body.image;
-  console.log('Log en createNew', user_id);
   const schema = joi.object().keys({
     title: joi.string().max(150).required(),
     header: joi.string().max(250).required(),
     body: joi.string().required(),
     user_id: joi.required(),
     date: joi.date(),
-    image: joi.string(),
   });
 
   const validation = await schema.validateAsync({
@@ -43,7 +40,6 @@ const createNew = async (req, res) => {
     body,
     user_id,
     date,
-    image,
   });
 
   if (validation.error) {
@@ -52,10 +48,10 @@ const createNew = async (req, res) => {
   try {
     await connection.query(
       `
-      INSERT INTO news(title, image, header, body,user_id, date )
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO news(title, header, body,user_id, date )
+      VALUES (?, ?, ?, ?, ?)
       `,
-      [title, image, header, body, user_id, date]
+      [title, header, body, user_id, date]
     );
   } catch (err) {
     throw generateError('Error en la base de datos', 500);
