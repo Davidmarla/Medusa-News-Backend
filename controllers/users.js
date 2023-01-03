@@ -15,12 +15,16 @@ const newUserController = async (req, res, next) => {
       password: joi.string().min(6),
     });
 
-    const validation = schema.validate({ user_name, email, password });
+    const validation = await schema.validateAsync({
+      user_name,
+      email,
+      password,
+    });
 
     if (validation.error) {
       throw generateError(
-        'Nombre de usuario min. 4 caracteres, una dirección de email válida, password min. 6 caracteres',
-        400
+        validation.error,
+        /* 'Nombre de usuario min. 4 caracteres, una dirección de email válida, password min. 6 caracteres' */ 400
       );
     }
 
@@ -82,7 +86,10 @@ const loginController = async (req, res, next) => {
   }
 };
 
+/* TODO: const updateUserProfile = async (req, res, next) => {}; */
+
 module.exports = {
   newUserController,
   loginController,
+  /* updateUserProfile, */
 };

@@ -1,6 +1,7 @@
 const { getConnection } = require('../db/db');
 const joi = require('joi');
 const { generateError } = require('../helpers');
+const { getNewById, getDeleteNewById } = require('../db/news');
 
 let connection;
 const getNews = async (req, res) => {
@@ -20,7 +21,7 @@ const getNews = async (req, res) => {
 const createNew = async (req, res) => {
   //TODO: Se necesita el user id para no meterlo a mano, tendra que pasarlo el meddlewere que comprueba que
   //esta autenticado
-
+  connection = await getConnection();
   const title = req.body.title;
   const header = req.body.header;
   const body = req.body.body;
@@ -67,7 +68,46 @@ const createNew = async (req, res) => {
   }
 };
 
+const getSingleNewController = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const newItem = await getNewById(id);
+    res.send({
+      status: 'ok',
+      data: newItem,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteNewController = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const newItem = await getNewById(id);
+
+    if (req.userId !== newItem.user_id) {
+      throw generateError(
+        'Estás intentando borrar un tweet que no es tuyo',
+        401
+      );
+    }
+
+    await getDeleteNewById(id);
+
+    res.send({
+      status: 'ok',
+      message: `El tweet con id: ${id} ha sido borrado`,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getNews,
   createNew,
+  getSingleNewController,
+  deleteNewController,
 };
