@@ -30,7 +30,7 @@ app.delete('/new/:id', authUser, deleteNewController);
 //Endpoints de usuario
 app.post('/user', newUserController);
 app.post('/login', loginController);
-/* TODO: app.post('/profile', authUser, updateUserProfile); */
+/* TODO: app.put('/profile/:id', authUser, updateUserProfile); */
 
 //Middleware que gestiona rutas no definidas
 app.use((req, res) => {
