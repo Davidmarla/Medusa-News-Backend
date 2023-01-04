@@ -2,14 +2,15 @@ require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const { authUser } = require('./middlewares/auth');
-//const fileUpload = require('express-fileupload');
+const fileUpload = require('express-fileupload');
 const bodyParser = require('body-parser');
 const port = 8888;
 const {
-  getNews,
-  createNew,
+  getNewsController,
+  createNewController,
   getSingleNewController,
   deleteNewController,
+  updateNewController,
 } = require('./controllers/news');
 const app = express();
 
@@ -24,12 +25,15 @@ app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
+app.use(fileUpload());
+app.use('/images', express.static('./images'));
 
 //endpoints NEWS
-app.get('/', getNews);
-app.post('/', authUser, createNew);
+app.get('/', getNewsController);
+app.post('/', authUser, createNewController);
 app.get('/new/:id', getSingleNewController);
 app.delete('/new/:id', authUser, deleteNewController);
+app.put('/new/:id', authUser, updateNewController);
 
 //Endpoints de usuario
 app.post('/user', newUserController);
