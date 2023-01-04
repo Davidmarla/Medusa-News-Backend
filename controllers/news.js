@@ -1,9 +1,9 @@
 const { getConnection } = require('../db/db');
 const joi = require('joi');
-const { generateError } = require('../helpers');
-
-
-
+const { generateError, createPathIfNotExists } = require('../helpers');
+const path = require('path');
+const sharp = require('sharp');
+const { nanoid } = require('nanoid');
 const { getNewById, getDeleteNewById } = require('../db/news');
 
 let connection;
@@ -27,37 +27,46 @@ const createNew = async (req, res) => {
 
   let connection = await getConnection();
 
-  const title = req.body.title;
-  const header = req.body.header;
-  const body = req.body.body;
+  const { title, subject, body } = req.body;
   const user_id = req.userId;
-  const date = req.body.date;
   const schema = joi.object().keys({
     title: joi.string().max(150).required(),
-    header: joi.string().max(250).required(),
+    subject: joi.string().max(25).required(),
     body: joi.string().required(),
     user_id: joi.required(),
-    date: joi.date(),
   });
 
   const validation = await schema.validateAsync({
     title,
-    header,
+    subject,
     body,
     user_id,
-    date,
   });
 
   if (validation.error) {
-    res.status(500).send('test');
+    res.status(500).send(validation.error);
+  }
+  //IMAGE
+  let imageFileName;
+
+  if (req.files && req.files.image) {
+    const imagesDir = path.join(__dirname, '../images');
+
+    await createPathIfNotExists(imagesDir);
+
+    const image = sharp(req.files.image.data);
+    image.resize(1000);
+
+    imageFileName = `${nanoid(30)}.jpg`;
+    await image.toFile(path.join(imagesDir, imageFileName));
   }
   try {
     await connection.query(
       `
-      INSERT INTO news(title, header, body,user_id, date )
+      INSERT INTO news(title, subject, image, body,user_id )
       VALUES (?, ?, ?, ?, ?)
       `,
-      [title, header, body, user_id, date]
+      [title, subject, imageFileName, body, user_id]
     );
   } catch (err) {
     throw generateError('Error en la base de datos', 500);
