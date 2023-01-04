@@ -40,9 +40,7 @@ async function main() {
       id INTEGER PRIMARY KEY AUTO_INCREMENT,
       title VARCHAR(150) NOT NULL,
       image VARCHAR(100),
-
       subject VARCHAR(25) NOT NULL,
-
       body TEXT NOT NULL,
       date DATE NOT NULL,
       user_id INT NOT NULL,

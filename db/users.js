@@ -24,7 +24,27 @@ const getUserByEmail = async (email) => {
   }
 };
 
-/* TODO: const getUserById = async (id) => {}; */
+const getUserById = async (id) => {
+  let connection;
+
+  try {
+    connection = await getConnection();
+
+    const [result] = await connection.query(
+      `
+    SELECT name, email, bio, profile_image FROM users WHERE id=?
+    `,
+      [id]
+    );
+
+    if (result.length === 0)
+      throw generateError('No hay ningún usuario con esa id', 404);
+
+    return result[0];
+  } finally {
+    if (connection) connection.release();
+  }
+};
 
 //Crea un usuario en la BD y devuelve su id
 const createUser = async (user_name, email, password) => {
@@ -84,5 +104,5 @@ const createUser = async (user_name, email, password) => {
 module.exports = {
   createUser,
   getUserByEmail,
-  /* getUserbyId, */
+  getUserById,
 };
