@@ -135,13 +135,12 @@ const updateNewController = async (req, res, next) => {
     `,
       [id]
     );
+
     const [currentNew] = result;
-    console.log(
-      'UpdateNewController',
-      currentNew,
-      currentNew.user_id,
-      req.userId
-    );
+
+    if (!currentNew) {
+      throw generateError('Noticia no enconrada', 404);
+    }
     if (currentNew.user_id !== req.userId) {
       throw generateError('No tienes permiso para modificar esta noticia', 403);
     }
