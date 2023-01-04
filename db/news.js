@@ -40,8 +40,39 @@ const getDeleteNewById = async (id) => {
     if (connection) connection.release();
   }
 };
+const getNews = async () => {
+  let connection;
+  try {
+    connection = await getConnection();
+    const news = await connection.query(`SELECT * FROM news;`);
+
+    return news[0];
+  } finally {
+    if (connection) connection.release();
+  }
+};
+const createNew = async (title, subject, imageFileName = '', body, userId) => {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [result] = await connection.query(
+      `
+      INSERT INTO news(title, subject, image, body,user_id )
+      VALUES (?, ?, ?, ?, ?)
+      `,
+      [title, subject, imageFileName, body, userId]
+    );
+    return result.insertId;
+  } catch (err) {
+    throw generateError('Error en la base de datos', 500);
+  } finally {
+    connection.release();
+  }
+};
 
 module.exports = {
   getNewById,
   getDeleteNewById,
+  createNew,
+  getNews,
 };

@@ -1,81 +1,74 @@
-const { getConnection } = require('../db/db');
 const joi = require('joi');
-const { generateError, createPathIfNotExists } = require('../helpers');
 const path = require('path');
 const sharp = require('sharp');
 const { nanoid } = require('nanoid');
-const { getNewById, getDeleteNewById } = require('../db/news');
 
-let connection;
-const getNews = async (req, res) => {
-  connection = await getConnection();
+const { getConnection } = require('../db/db');
+
+const { generateError, createPathIfNotExists } = require('../helpers');
+const {
+  getNewById,
+  getDeleteNewById,
+  createNew,
+  getNews,
+} = require('../db/news');
+
+const getNewsController = async (req, res, next) => {
   try {
-    const news = await connection.query(`SELECT * FROM news;`);
-    console.log(news);
-    res.send([news[0]]);
-  } catch (error) {
-    console.log(error);
-    res.status(500).send;
-  } finally {
-    connection.release();
-  }
-};
+    const news = await getNews();
 
-const createNew = async (req, res) => {
-  //TODO: Se necesita el user id para no meterlo a mano, tendra que pasarlo el meddlewere que comprueba que
-  //esta autenticado
-
-  let connection = await getConnection();
-
-  const { title, subject, body } = req.body;
-  const user_id = req.userId;
-  const schema = joi.object().keys({
-    title: joi.string().max(150).required(),
-    subject: joi.string().max(25).required(),
-    body: joi.string().required(),
-    user_id: joi.required(),
-  });
-
-  const validation = await schema.validateAsync({
-    title,
-    subject,
-    body,
-    user_id,
-  });
-
-  if (validation.error) {
-    res.status(500).send(validation.error);
-  }
-  //IMAGE
-  let imageFileName;
-
-  if (req.files && req.files.image) {
-    const imagesDir = path.join(__dirname, '../images');
-
-    await createPathIfNotExists(imagesDir);
-
-    const image = sharp(req.files.image.data);
-    image.resize(1000);
-
-    imageFileName = `${nanoid(30)}.jpg`;
-    await image.toFile(path.join(imagesDir, imageFileName));
-  }
-  try {
-    await connection.query(
-      `
-      INSERT INTO news(title, subject, image, body,user_id )
-      VALUES (?, ?, ?, ?, ?)
-      `,
-      [title, subject, imageFileName, body, user_id]
-    );
+    res.send({
+      status: 'ok',
+      data: news,
+    });
   } catch (err) {
-    throw generateError('Error en la base de datos', 500);
-  } finally {
-    connection.release();
+    next(err);
   }
-  res.status(201).send();
 };
 
+const createNewController = async (req, res, next) => {
+  try {
+    const { title, subject, body } = req.body;
+    const userId = req.userId;
+    const schema = joi.object().keys({
+      title: joi.string().max(150).required(),
+      subject: joi.string().max(25).required(),
+      body: joi.string().required(),
+    });
+
+    const validation = await schema.validateAsync({
+      title,
+      subject,
+      body,
+    });
+
+    if (validation.error) {
+      res.status(500).send(validation.error);
+    }
+    //IMAGE
+    let imageFileName;
+
+    if (req.files && req.files.image) {
+      const imagesDir = path.join(__dirname, '../images');
+
+      await createPathIfNotExists(imagesDir);
+
+      const image = sharp(req.files.image.data);
+      image.resize(1000);
+
+      imageFileName = `${nanoid(30)}.jpg`;
+      await image.toFile(path.join(imagesDir, imageFileName));
+    }
+    console.log('log de createNewController', userId);
+    const id = await createNew(title, subject, imageFileName, body, userId);
+    res.send({
+      status: 'ok',
+      message: `Noticia creada corrartamente con id: ${id}`,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 const getSingleNewController = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -112,10 +105,72 @@ const deleteNewController = async (req, res, next) => {
     next(error);
   }
 };
+const updateNewController = async (req, res, next) => {
+  // sacar los datos cambiados
+  let connection;
+  try {
+    connection = await getConnection();
+    const { title, subject, body } = req.body;
+    const { id } = req.params;
 
+    //validar con joi
+    const schema = joi.object().keys({
+      title: joi.string().max(150),
+      subject: joi.string().max(25),
+      body: joi.string(),
+    });
+    const validation = await schema.validateAsync({
+      title,
+      subject,
+      body,
+    });
+
+    if (validation.error) {
+      res.status(500).send(validation.error);
+    }
+    //selecionar los datos de la entrada que queramos cambiar
+    const [result] = await connection.query(
+      `
+    SELECT title, subject, body, user_id FROM news WHERE id = ?
+    `,
+      [id]
+    );
+    const [currentNew] = result;
+    console.log(
+      'UpdateNewController',
+      currentNew,
+      currentNew.user_id,
+      req.userId
+    );
+    if (currentNew.user_id !== req.userId) {
+      throw generateError('No tienes permiso para modificar esta noticia', 403);
+    }
+    //cambiarlos datos
+    await connection.query(
+      `
+      UPDATE news SET title=?, subject=?, body=? WHERE id = ?
+      `,
+      [title, subject, body, id]
+    );
+    res.send({
+      status: 'ok',
+      data: {
+        id,
+        title,
+        subject,
+        body,
+      },
+    });
+  } catch (err) {
+    next(err);
+  } finally {
+    if (connection) connection.release();
+  }
+};
 module.exports = {
-  getNews,
-  createNew,
+  getNewsController,
+  createNewController,
   getSingleNewController,
   deleteNewController,
+  updateNewController,
 };
