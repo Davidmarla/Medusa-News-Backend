@@ -14,7 +14,11 @@ const {
 } = require('./controllers/news');
 const app = express();
 
-const { newUserController, loginController } = require('./controllers/users');
+const {
+  newUserController,
+  loginController,
+  updateUserProfile,
+} = require('./controllers/users');
 
 app.use(morgan('dev'));
 
@@ -34,7 +38,7 @@ app.put('/new/:id', authUser, updateNewController);
 //Endpoints de usuario
 app.post('/user', newUserController);
 app.post('/login', loginController);
-/* TODO: app.put('/profile/:id', authUser, updateUserProfile); */
+/* TODO:  */ app.put('/profile/:id', authUser, updateUserProfile);
 
 //Middleware que gestiona rutas no definidas
 app.use((req, res) => {

@@ -2,8 +2,9 @@ const bcrypt = require('bcrypt');
 const joi = require('joi');
 const jwt = require('jsonwebtoken');
 
-const { generateError } = require('../helpers');
-const { createUser, getUserByEmail } = require('../db/users');
+const { generateError, processAndSaveImage } = require('../helpers');
+const { createUser, getUserByEmail, getUserById } = require('../db/users');
+const { getConnection } = require('../db/db');
 
 const newUserController = async (req, res, next) => {
   try {
@@ -22,10 +23,7 @@ const newUserController = async (req, res, next) => {
     });
 
     if (validation.error) {
-      throw generateError(
-        validation.error,
-        /* 'Nombre de usuario min. 4 caracteres, una dirección de email válida, password min. 6 caracteres' */ 400
-      );
+      throw generateError(validation.error, 400);
     }
 
     const id = await createUser(user_name, email, password);
@@ -50,7 +48,7 @@ const loginController = async (req, res, next) => {
       password: joi.string().min(6),
     });
 
-    const validation = schema.validate({ email, password });
+    const validation = await schema.validateAsync({ email, password });
 
     if (validation.error) {
       throw generateError('Email o password incorrectos', 400);
@@ -67,9 +65,7 @@ const loginController = async (req, res, next) => {
     }
 
     //Creo el payload del token
-    const payload = {
-      id: user.id,
-    };
+    const payload = { id: user.id };
 
     //Firmo el token, válido por 30 días
     const token = jwt.sign(payload, process.env.SECRET, {
@@ -86,10 +82,97 @@ const loginController = async (req, res, next) => {
   }
 };
 
-/* TODO: const updateUserProfile = async (req, res, next) => {}; */
+/* TODO: */ const updateUserProfile = async (req, res, next) => {
+  let connection;
+
+  try {
+    connection = await getConnection();
+
+    const { id } = req.params;
+    const { name, bio } = req.body;
+
+    const [currentUser] = await connection.query(
+      `
+      SELECT id, name, bio, profile_image
+      FROM users
+      WHERE id=?
+      `,
+      [id]
+    );
+
+    console.log(id, getUserById);
+
+    if (id !== getUserById) {
+      throw generateError('No tienes permisos para editar este usuario', 403);
+    }
+
+    if (currentUser.length === 0) {
+      throw generateError(`El usuario con id ${id} no existe`, 404);
+    }
+
+    let updatedProfileImage;
+
+    if (req.files) {
+      try {
+        // Procesar y guardar imagen
+        updatedProfileImage = await processAndSaveImage(req.files.image);
+      } catch (error) {
+        throw generateError(
+          'No se pudo procesar la imagen. Inténtalo de nuevo',
+          400
+        );
+      }
+    }
+
+    const updatedName = name;
+    const updatedBio = bio;
+    const schema = joi.object().keys({
+      updatedName: joi
+        .string()
+        .min(10)
+        .max(100)
+        .error(generateError('Nombre (mín. 10 , máx. 100 caracteres', 400)),
+      updatedBio: joi
+        .string()
+        .max(500)
+        .error(generateError('Bio (máx. 500 caracteres', 400)),
+    });
+
+    const validation = await schema.validateAsync({
+      updatedName,
+      updatedBio,
+    });
+
+    if (validation.error) {
+      res.send({
+        status: 'Error',
+        message: 'Datos introducidos incorrectos',
+      });
+    }
+    try {
+      await connection.query(
+        `
+      UPDATE users SET name = ?, bio = ?, profile_image = ?
+      WHERE id = ?;
+      `,
+        [updatedName, updatedBio, updatedProfileImage, id]
+      );
+    } catch (err) {
+      throw generateError('Error en la base de datos', 500);
+    } finally {
+      if (connection) connection.release();
+    }
+    res.send({
+      status: 'ok',
+      message: `Perfil actualizado correctamente`,
+    });
+  } finally {
+    if (connection) connection.release();
+  }
+};
 
 module.exports = {
   newUserController,
   loginController,
-  /* updateUserProfile, */
+  updateUserProfile,
 };
