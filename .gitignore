@@ -2,3 +2,4 @@
 .eslintrc.json
 .prettierrc.json
 node_modules
+uploads
