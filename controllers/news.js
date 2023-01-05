@@ -5,7 +5,11 @@ const { nanoid } = require('nanoid');
 
 const { getConnection } = require('../db/db');
 
-const { generateError, createPathIfNotExists } = require('../helpers');
+const {
+  generateError,
+  createPathIfNotExists,
+  createKeywordIfNotExsists,
+} = require('../helpers');
 const {
   getNewById,
   getDeleteNewById,
@@ -45,12 +49,14 @@ const createNewController = async (req, res, next) => {
     if (validation.error) {
       res.status(500).send(validation.error);
     }
-    //IMAGE
+    //keyword
+    await createKeywordIfNotExsists(subject);
+
+    //IMAGE TODO: Meter las imagenes en la carpeta uploads/Images
     let imageFileName;
 
     if (req.files && req.files.image) {
-      const imagesDir = path.join(__dirname, '../images');
-
+      const imagesDir = path.join(__dirname, '../newsImages');
       await createPathIfNotExists(imagesDir);
 
       const image = sharp(req.files.image.data);
@@ -112,7 +118,6 @@ const updateNewController = async (req, res, next) => {
     connection = await getConnection();
     const { title, subject, body } = req.body;
     const { id } = req.params;
-
     //validar con joi
     const schema = joi.object().keys({
       title: joi.string().max(150),
@@ -144,12 +149,18 @@ const updateNewController = async (req, res, next) => {
     if (currentNew.user_id !== req.userId) {
       throw generateError('No tienes permiso para modificar esta noticia', 403);
     }
+
     //cambiarlos datos
     await connection.query(
       `
       UPDATE news SET title=?, subject=?, body=? WHERE id = ?
       `,
-      [title, subject, body, id]
+      [
+        title ?? currentNew.title,
+        subject ?? currentNew.subject,
+        body ?? currentNew.body,
+        id,
+      ]
     );
     res.send({
       status: 'ok',
