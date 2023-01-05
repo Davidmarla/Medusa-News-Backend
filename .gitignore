@@ -2,4 +2,8 @@
 .eslintrc.json
 .prettierrc.json
 node_modules
-uploads
+image1.jpg
+image2.jpg
+image3.jpg
+./uploads/profileImages
+

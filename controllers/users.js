@@ -3,7 +3,7 @@ const joi = require('joi');
 const jwt = require('jsonwebtoken');
 
 const { generateError, processAndSaveImage } = require('../helpers');
-const { createUser, getUserByEmail, getUserById } = require('../db/users');
+const { createUser, getUserByEmail } = require('../db/users');
 const { getConnection } = require('../db/db');
 
 const newUserController = async (req, res, next) => {
@@ -31,7 +31,7 @@ const newUserController = async (req, res, next) => {
 
     res.send({
       status: 'ok',
-      message: `User created with id: ${id}`,
+      message: `Usuario creado con id: ${id}`,
     });
   } catch (error) {
     next(error);
@@ -82,7 +82,7 @@ const loginController = async (req, res, next) => {
   }
 };
 
-/* TODO: */ const updateUserProfile = async (req, res, next) => {
+const updateUserProfile = async (req, res, next) => {
   let connection;
 
   try {
@@ -91,20 +91,20 @@ const loginController = async (req, res, next) => {
     const { id } = req.params;
     const { name, bio } = req.body;
 
+    console.log(Number(id), req.userId);
+
+    if (Number(id) !== req.userId) {
+      throw generateError('No tienes permisos para editar este usuario', 403);
+    }
+
     const [currentUser] = await connection.query(
       `
       SELECT id, name, bio, profile_image
       FROM users
-      WHERE id=?
+      WHERE id = ?;
       `,
       [id]
     );
-
-    console.log(id, getUserById);
-
-    if (id !== getUserById) {
-      throw generateError('No tienes permisos para editar este usuario', 403);
-    }
 
     if (currentUser.length === 0) {
       throw generateError(`El usuario con id ${id} no existe`, 404);
@@ -116,7 +116,7 @@ const loginController = async (req, res, next) => {
       try {
         // Procesar y guardar imagen
         updatedProfileImage = await processAndSaveImage(req.files.image);
-      } catch (error) {
+      } catch {
         throw generateError(
           'No se pudo procesar la imagen. Inténtalo de nuevo',
           400
@@ -124,32 +124,23 @@ const loginController = async (req, res, next) => {
       }
     }
 
-    const updatedName = name;
-    const updatedBio = bio;
-    const schema = joi.object().keys({
-      updatedName: joi
-        .string()
-        .min(10)
-        .max(100)
-        .error(generateError('Nombre (mín. 10 , máx. 100 caracteres', 400)),
-      updatedBio: joi
-        .string()
-        .max(500)
-        .error(generateError('Bio (máx. 500 caracteres', 400)),
-    });
-
-    const validation = await schema.validateAsync({
-      updatedName,
-      updatedBio,
-    });
-
-    if (validation.error) {
-      res.send({
-        status: 'Error',
-        message: 'Datos introducidos incorrectos',
-      });
-    }
     try {
+      const updatedName = name;
+      const updatedBio = bio;
+      const schema = joi.object().keys({
+        updatedName: joi.string().min(10).max(100),
+        updatedBio: joi.string().max(500),
+      });
+
+      const validation = await schema.validateAsync({
+        updatedName,
+        updatedBio,
+      });
+
+      if (validation.error) {
+        throw generateError('Nombre (mín. 10, máx. 100), Bio (máx. 500)', 400);
+      }
+
       await connection.query(
         `
       UPDATE users SET name = ?, bio = ?, profile_image = ?
@@ -157,14 +148,14 @@ const loginController = async (req, res, next) => {
       `,
         [updatedName, updatedBio, updatedProfileImage, id]
       );
-    } catch (err) {
+    } catch {
       throw generateError('Error en la base de datos', 500);
     } finally {
       if (connection) connection.release();
     }
     res.send({
       status: 'ok',
-      message: `Perfil actualizado correctamente`,
+      message: 'Perfil actualizado correctamente',
     });
   } finally {
     if (connection) connection.release();

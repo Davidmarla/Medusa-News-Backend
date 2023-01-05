@@ -26,7 +26,7 @@ async function processAndSaveImage(uploadedImage) {
 
   //Procesar la imagen
   const image = sharp(uploadedImage.data);
-  image.resize(1000);
+  image.resize(500);
 
   // Guardar la imagen en el directorio de subidas
   const imageFileName = `${nanoid(30)}.jpg`;

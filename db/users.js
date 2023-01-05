@@ -24,7 +24,7 @@ const getUserByEmail = async (email) => {
   }
 };
 
-const getUserById = async (id) => {
+/* const getUserById = async (id) => {
   let connection;
 
   try {
@@ -32,7 +32,7 @@ const getUserById = async (id) => {
 
     const [result] = await connection.query(
       `
-    SELECT name, email, bio, profile_image FROM users WHERE id=?
+    SELECT id, name, bio, profile_image FROM users WHERE id=?
     `,
       [id]
     );
@@ -44,7 +44,7 @@ const getUserById = async (id) => {
   } finally {
     if (connection) connection.release();
   }
-};
+}; */
 
 //Crea un usuario en la BD y devuelve su id
 const createUser = async (user_name, email, password) => {
@@ -104,5 +104,4 @@ const createUser = async (user_name, email, password) => {
 module.exports = {
   createUser,
   getUserByEmail,
-  getUserById,
 };

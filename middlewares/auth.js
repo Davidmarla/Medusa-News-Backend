@@ -17,7 +17,7 @@ const authUser = (req, res, next) => {
       throw generateError('Token incorrecto, 401');
     }
     //console.log(token);
-    
+
     //Metemos la información del token en la request para usarla en el controlador
     req.userId = token.id;
 
