@@ -58,9 +58,17 @@ const createNew = async (title, subject, imageFileName = '', body, userId) => {
     const [result] = await connection.query(
       `
       INSERT INTO news(title, subject, image, body,user_id )
-      VALUES (?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?);
+      `, //TODO: no ser tan cuctre con la solucion a esto.
+      [title, subject, imageFileName ?? '', body, userId]
+    );
+    await connection.query(
+      `
+      INSERT INTO keyword_news (news_id, keyword_id) 
+      SELECT news.id, keywords.id from news inner join keywords on news.subject = keywords.keyword 
+      where news.subject = ?
       `,
-      [title, subject, imageFileName, body, userId]
+      [subject]
     );
     return result.insertId;
   } catch (err) {

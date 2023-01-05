@@ -56,6 +56,7 @@ async function main() {
 
     await connection.query(`
     CREATE TABLE keyword_news(
+      id INTEGER PRIMARY KEY AUTO_INCREMENT
       keyword_id INTEGER NOT NULL,
       news_id INTEGER NOT NULL,
       FOREIGN KEY (keyword_id) REFERENCES keywords(id),
