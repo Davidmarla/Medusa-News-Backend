@@ -93,10 +93,6 @@ const updateUserProfile = async (req, res, next) => {
 
     console.log(Number(id), req.userId);
 
-    if (Number(id) !== req.userId) {
-      throw generateError('No tienes permisos para editar este usuario', 403);
-    }
-
     const [currentUser] = await connection.query(
       `
       SELECT id, name, bio, profile_image
@@ -108,6 +104,10 @@ const updateUserProfile = async (req, res, next) => {
 
     if (currentUser.length === 0) {
       throw generateError(`El usuario con id ${id} no existe`, 404);
+    }
+
+    if (Number(id) !== req.userId) {
+      throw generateError('No tienes permisos para editar este usuario', 403);
     }
 
     let updatedProfileImage;
@@ -124,27 +124,38 @@ const updateUserProfile = async (req, res, next) => {
       }
     }
 
+    const updatedName = name;
+    const updatedBio = bio;
+    const schema = joi.object().keys({
+      updatedName: joi
+        .string()
+        .min(10)
+        .max(100)
+        .error(
+          generateError('Nombre mín. 10 caracteres, máx. 100 caracteres', 400)
+        ),
+      updatedBio: joi
+        .string()
+        .min(25)
+        .max(500)
+        .error(
+          generateError(
+            'Biografía mín. 25 caracteres, máx. 500 caracteres',
+            400
+          )
+        ),
+    });
+
+    await schema.validateAsync({
+      updatedName,
+      updatedBio,
+    });
+
     try {
-      const updatedName = name;
-      const updatedBio = bio;
-      const schema = joi.object().keys({
-        updatedName: joi.string().min(10).max(100),
-        updatedBio: joi.string().max(500),
-      });
-
-      const validation = await schema.validateAsync({
-        updatedName,
-        updatedBio,
-      });
-
-      if (validation.error) {
-        throw generateError('Nombre (mín. 10, máx. 100), Bio (máx. 500)', 400);
-      }
-
       await connection.query(
-        `
-      UPDATE users SET name = ?, bio = ?, profile_image = ?
-      WHERE id = ?;
+        `UPDATE users 
+      SET name = ?, bio = ?, profile_image = ?
+      WHERE id = ?
       `,
         [updatedName, updatedBio, updatedProfileImage, id]
       );
@@ -157,6 +168,8 @@ const updateUserProfile = async (req, res, next) => {
       status: 'ok',
       message: 'Perfil actualizado correctamente',
     });
+  } catch (error) {
+    next(error);
   } finally {
     if (connection) connection.release();
   }
