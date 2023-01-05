@@ -26,7 +26,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 app.use(fileUpload());
-app.use('/images', express.static('./images'));
+app.use('./images', express.static('./images'));
 
 //endpoints NEWS
 app.get('/', getNewsController);
@@ -38,7 +38,7 @@ app.put('/new/:id', authUser, updateNewController);
 //Endpoints de usuario
 app.post('/user', newUserController);
 app.post('/login', loginController);
-/* TODO:  */ app.put('/profile/:id', authUser, updateUserProfile);
+app.put('/profile/:id', authUser, updateUserProfile);
 
 //Middleware que gestiona rutas no definidas
 app.use((req, res) => {
