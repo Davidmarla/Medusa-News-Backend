@@ -14,6 +14,7 @@ async function main() {
 
     console.log('Borrando tablas existentes...');
 
+    await connection.query('DROP TABLE IF EXISTS votes_news;');
     await connection.query('DROP TABLE IF EXISTS keyword_news;');
     await connection.query('DROP TABLE IF EXISTS keywords;');
     await connection.query('DROP TABLE IF EXISTS news;');
@@ -60,6 +61,17 @@ async function main() {
       keyword_id INTEGER NOT NULL,
       news_id INTEGER NOT NULL,
       FOREIGN KEY (keyword_id) REFERENCES keywords(id),
+      FOREIGN KEY (news_id) REFERENCES news(id)
+    )`);
+
+    await connection.query(`
+    CREATE TABLE votes_news(
+      id INTEGER PRIMARY KEY AUTO_INCREMENT,
+      news_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      up_vote INT,
+      donw_vote INT,
+      FOREIGN KEY (user_id) REFERENCES users(id),
       FOREIGN KEY (news_id) REFERENCES news(id)
     )`);
   } catch (error) {

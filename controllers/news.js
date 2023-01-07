@@ -96,7 +96,7 @@ const deleteNewController = async (req, res, next) => {
 
     if (req.userId !== newItem.user_id) {
       throw generateError(
-        'Estás intentando borrar un tweet que no es tuyo',
+        'Estás intentando borrar una Noticia que no es tuyo',
         401
       );
     }
@@ -105,7 +105,7 @@ const deleteNewController = async (req, res, next) => {
 
     res.send({
       status: 'ok',
-      message: `El tweet con id: ${id} ha sido borrado`,
+      message: `La Noticia con id: ${id} ha sido borrado`,
     });
   } catch (error) {
     next(error);
@@ -133,7 +133,7 @@ const updateNewController = async (req, res, next) => {
     if (validation.error) {
       res.status(500).send(validation.error);
     }
-    //selecionar los datos de la entrada que queramos cambiar
+    //TODO:separar en una función que vea que la noticia existe
     const [result] = await connection.query(
       `
     SELECT title, subject, body, user_id FROM news WHERE id = ?
@@ -177,10 +177,79 @@ const updateNewController = async (req, res, next) => {
     if (connection) connection.release();
   }
 };
+
+const voteNew = async (req, res, next) => {
+  let connection;
+  //coseguir de params si es up o donw
+  const type = req.params.type;
+  const newId = req.params.id;
+  const userId = req.userId;
+  try {
+    connection = await getConnection();
+    const [vote] = await connection.query(
+      `
+      SELECT id FROM votes_news WHERE news_id = ? and user_id = ?;
+      `,
+      [newId, userId]
+    );
+    const [currentVote] = await connection.query(
+      `
+      SELECT id FROM votes_news WHERE news_id = ? and user_id = ?;
+      `,
+      [newId, userId]
+    );
+
+    if (!vote.lenght) {
+      await connection.query(
+        `
+        INSERT INTO votes_news(up_vote, donw_vote, news_id, user_id) VALUES(0, 0, ?, ?);
+        `,
+        [parseInt(newId), userId]
+      );
+      console.log('Entrada creada');
+    }
+    if (vote.lenght) {
+      await connection.query(
+        `
+        UPDATE votes_news set up_vote = 0, donw_vote = 0 WHERE id = ?;
+        `,
+        [newId]
+      );
+    }
+    //si es up,
+    if (type === 'up') {
+      await connection.query(
+        `
+        UPDATE votes_news set up_vote = 1, donw_vote = 0 WHERE id = ?;
+        `,
+        [currentVote.id]
+      );
+      console.log('voto up 1');
+    }
+    if (type === 'donw') {
+      //si es donw,
+      await connection.query(
+        `
+        UPDATE votes_news set up_vote = 0, donw_vote = 1 WHERE id = ?;
+        `,
+        [currentVote.id]
+      );
+      console.log('voto donw 1');
+    }
+    res.send({
+      status: 'ok',
+    });
+  } catch (error) {
+    next(error);
+    return;
+  }
+};
+
 module.exports = {
   getNewsController,
   createNewController,
   getSingleNewController,
   deleteNewController,
   updateNewController,
+  voteNew,
 };
