@@ -52,7 +52,6 @@ const createNewController = async (req, res, next) => {
     //keyword
     await createKeywordIfNotExsists(subject);
 
-    //IMAGE TODO: Meter las imagenes en la carpeta uploads/Images
     let imageFileName;
 
     if (req.files && req.files.image) {
@@ -96,7 +95,6 @@ const deleteNewController = async (req, res, next) => {
 
     if (req.userId !== newItem.user_id) {
       throw generateError(
-
         'Estás intentando borrar una noticia que no es tuya',
 
         401
@@ -109,7 +107,6 @@ const deleteNewController = async (req, res, next) => {
       status: 'ok',
 
       message: `La noticia con id: ${id} ha sido borrado`,
-
     });
   } catch (error) {
     next(error);
@@ -153,12 +150,11 @@ const updateNewController = async (req, res, next) => {
 };
 
 const voteNewController = async (req, res, next) => {
-  //coseguir de params si es up o down
   try {
     const type = req.params.type;
     const newId = req.params.id;
     const userId = req.userId;
-
+    await getNewById(newId);
     await voteNews(type, newId, userId);
 
     res.send({
