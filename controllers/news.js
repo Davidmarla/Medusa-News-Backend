@@ -3,8 +3,6 @@ const path = require('path');
 const sharp = require('sharp');
 const { nanoid } = require('nanoid');
 
-const { getConnection } = require('../db/db');
-
 const {
   generateError,
   createPathIfNotExists,
@@ -15,6 +13,8 @@ const {
   getDeleteNewById,
   createNew,
   getNews,
+  voteNews,
+  updateNew,
 } = require('../db/news');
 
 const getNewsController = async (req, res, next) => {
@@ -96,7 +96,9 @@ const deleteNewController = async (req, res, next) => {
 
     if (req.userId !== newItem.user_id) {
       throw generateError(
+
         'Estás intentando borrar una noticia que no es tuya',
+
         401
       );
     }
@@ -105,7 +107,9 @@ const deleteNewController = async (req, res, next) => {
 
     res.send({
       status: 'ok',
+
       message: `La noticia con id: ${id} ha sido borrado`,
+
     });
   } catch (error) {
     next(error);
@@ -113,9 +117,8 @@ const deleteNewController = async (req, res, next) => {
 };
 const updateNewController = async (req, res, next) => {
   // sacar los datos cambiados
-  let connection;
+
   try {
-    connection = await getConnection();
     const { title, subject, body } = req.body;
     const { id } = req.params;
     //validar con joi
@@ -131,56 +134,46 @@ const updateNewController = async (req, res, next) => {
     });
 
     if (validation.error) {
-      res.status(500).send(validation.error);
+      throw generateError(`${validation.error}`, 401);
     }
-    //selecionar los datos de la entrada que queramos cambiar
-    const [result] = await connection.query(
-      `
-    SELECT title, subject, body, user_id FROM news WHERE id = ?
-    `,
-      [id]
-    );
 
-    const [currentNew] = result;
+    const newItem = await getNewById(id);
 
-    if (!currentNew) {
-      throw generateError('Noticia no enconrada', 404);
-    }
-    if (currentNew.user_id !== req.userId) {
+    if (newItem.user_id !== req.userId) {
       throw generateError('No tienes permiso para modificar esta noticia', 403);
     }
-
-    //cambiarlos datos
-    await connection.query(
-      `
-      UPDATE news SET title=?, subject=?, body=? WHERE id = ?
-      `,
-      [
-        title ?? currentNew.title,
-        subject ?? currentNew.subject,
-        body ?? currentNew.body,
-        id,
-      ]
-    );
+    await updateNew(title, subject, body, id);
     res.send({
       status: 'ok',
-      data: {
-        id,
-        title,
-        subject,
-        body,
-      },
+      message: `La Noticia ha sido modificada.`,
     });
   } catch (err) {
     next(err);
-  } finally {
-    if (connection) connection.release();
   }
 };
+
+const voteNewController = async (req, res, next) => {
+  //coseguir de params si es up o down
+  try {
+    const type = req.params.type;
+    const newId = req.params.id;
+    const userId = req.userId;
+
+    await voteNews(type, newId, userId);
+
+    res.send({
+      status: 'ok',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getNewsController,
   createNewController,
   getSingleNewController,
   deleteNewController,
   updateNewController,
+  voteNewController,
 };
