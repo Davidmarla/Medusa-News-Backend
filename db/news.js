@@ -20,10 +20,10 @@ const getNewById = async (id) => {
       downVote
       
       from news 
-       left join 
-       (SELECT  news_id,  SUM(up_vote) as upVote , SUM(down_vote) as downVote
-       FROM votes_news group by news_id ) s
-       on (news.id = news_id) where news.id = ?
+      left join 
+      (SELECT  news_id,  SUM(up_vote) as upVote , SUM(down_vote) as downVote
+      FROM votes_news group by news_id ) s
+      on (news.id = news_id) where news.id = ?
     `,
       [id]
     );
@@ -72,12 +72,12 @@ const getNews = async () => {
     downVote
     
     from news 
-     left join 
-     (SELECT  news_id,  SUM(up_vote) as upVote , SUM(down_vote) as downVote
-     FROM votes_news group by news_id ) s
-     on (news.id = news_id) order by news.create_date DESC
-     
-     `);
+    left join 
+    (SELECT  news_id,  SUM(up_vote) as upVote , SUM(down_vote) as downVote
+    FROM votes_news group by news_id ) s
+    on (news.id = news_id) order by news.create_date DESC
+    
+    `);
 
     return news[0];
   } finally {
