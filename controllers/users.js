@@ -89,13 +89,13 @@ const updateUserProfile = async (req, res, next) => {
     connection = await getConnection();
 
     const { id } = req.params;
-    const { name, user_name, bio, password1, password2 } = req.body;
+    const { name, bio, password1, password2 } = req.body;
 
     console.log(Number(id), req.userId);
 
     const [currentUser] = await connection.query(
       `
-      SELECT id, name, user_name, bio, profile_image
+      SELECT id, name, bio, profile_image
       FROM users
       WHERE id = ?;
       `,
