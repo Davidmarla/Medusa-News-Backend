@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const { authUser } = require('./middlewares/auth');
-const { newExists } = require('./middlewares/newExists');
 const fileUpload = require('express-fileupload');
 const bodyParser = require('body-parser');
 const port = 8888;
@@ -37,7 +36,7 @@ app.get('/new/:id', getSingleNewController);
 app.delete('/new/:id', authUser, deleteNewController);
 app.put('/new/:id', authUser, updateNewController);
 //TODO: app.get('/keyword', getNewsKeywordController);
-app.put('/:id/:type', authUser, newExists, voteNewController);
+app.put('/:id/:type', authUser, voteNewController);
 
 //Endpoints de usuario
 app.post('/user', newUserController);
