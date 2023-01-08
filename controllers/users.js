@@ -45,7 +45,7 @@ const loginController = async (req, res, next) => {
     //Se valida el email y password
     const schema = joi.object().keys({
       email: joi.string().email().required(),
-      password: joi.string().min(6),
+      password: joi.string().min(8),
     });
 
     const validation = await schema.validateAsync({ email, password });
@@ -89,13 +89,13 @@ const updateUserProfile = async (req, res, next) => {
     connection = await getConnection();
 
     const { id } = req.params;
-    const { name, bio } = req.body;
+    const { name, user_name, bio, password1, password2 } = req.body;
 
     console.log(Number(id), req.userId);
 
     const [currentUser] = await connection.query(
       `
-      SELECT id, name, bio, profile_image
+      SELECT id, name, user_name, bio, profile_image
       FROM users
       WHERE id = ?;
       `,
@@ -126,6 +126,8 @@ const updateUserProfile = async (req, res, next) => {
 
     const updatedName = name;
     const updatedBio = bio;
+    const updatedPassword1 = password1;
+    const updatedPassword2 = password2;
     const schema = joi.object().keys({
       updatedName: joi
         .string()
@@ -139,25 +141,40 @@ const updateUserProfile = async (req, res, next) => {
         .min(25)
         .max(500)
         .error(
-          generateError(
-            'Biografía mín. 25 caracteres, máx. 500 caracteres',
-            400
-          )
+          generateError('Biografía mín. 25 caracteres, máx. 50 caracteres', 400)
         ),
+      updatedPassword1: joi
+        .string()
+        .min(8)
+        .error(generateError('Password mín. 8 caracteres', 400)),
+      updatedPassword2: joi
+        .string()
+        .min(8)
+        .error(generateError('Password mín. 8 caracteres', 400)),
     });
 
     await schema.validateAsync({
       updatedName,
       updatedBio,
+      updatedPassword1,
+      updatedPassword2,
     });
+
+    if (updatedPassword1 !== updatedPassword2) {
+      throw generateError('Las contraseñas no coinciden');
+    }
+
+    const passwordHash = await bcrypt.hash(updatedPassword1, 8);
+
+    console.log(updatedName, updatedBio, passwordHash, updatedProfileImage, id);
 
     try {
       await connection.query(
         `UPDATE users 
-      SET name = ?, bio = ?, profile_image = ?
+      SET name = ?, bio = ?, password = ?, profile_image = ?
       WHERE id = ?
       `,
-        [updatedName, updatedBio, updatedProfileImage, id]
+        [updatedName, updatedBio, passwordHash, updatedProfileImage, id]
       );
     } catch {
       throw generateError('Error en la base de datos', 500);
