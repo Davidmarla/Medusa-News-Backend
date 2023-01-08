@@ -75,7 +75,7 @@ const getNews = async () => {
      left join 
      (SELECT  news_id,  SUM(up_vote) as upVote , SUM(down_vote) as downVote
      FROM votes_news group by news_id ) s
-     on (news.id = news_id)
+     on (news.id = news_id) order by news.create_date DESC
      
      `);
 
