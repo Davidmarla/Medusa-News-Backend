@@ -56,7 +56,7 @@ const createNewController = async (req, res, next) => {
     let imageFileName;
 
     if (req.files && req.files.image) {
-      const imagesDir = path.join(__dirname, '../newsImages');
+      const imagesDir = path.join(__dirname, process.env.UPLOADS_DIRNEWS);
       await createPathIfNotExists(imagesDir);
 
       const image = sharp(req.files.image.data);
@@ -96,7 +96,9 @@ const deleteNewController = async (req, res, next) => {
 
     if (req.userId !== newItem.user_id) {
       throw generateError(
-        'Estás intentando borrar una Noticia que no es tuyo',
+
+        'Estás intentando borrar una noticia que no es tuya',
+
         401
       );
     }
@@ -105,7 +107,9 @@ const deleteNewController = async (req, res, next) => {
 
     res.send({
       status: 'ok',
-      message: `La Noticia con id: ${id} ha sido borrado`,
+
+      message: `La noticia con id: ${id} ha sido borrado`,
+
     });
   } catch (error) {
     next(error);
