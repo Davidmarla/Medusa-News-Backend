@@ -70,7 +70,7 @@ async function main() {
       news_id INTEGER NOT NULL,
       user_id INTEGER NOT NULL,
       up_vote INT,
-      donw_vote INT,
+      down_vote INT,
       FOREIGN KEY (user_id) REFERENCES users(id),
       FOREIGN KEY (news_id) REFERENCES news(id)
     )`);

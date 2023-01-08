@@ -3,8 +3,6 @@ const path = require('path');
 const sharp = require('sharp');
 const { nanoid } = require('nanoid');
 
-const { getConnection } = require('../db/db');
-
 const {
   generateError,
   createPathIfNotExists,
@@ -15,6 +13,8 @@ const {
   getDeleteNewById,
   createNew,
   getNews,
+  voteNews,
+  updateNew,
 } = require('../db/news');
 
 const getNewsController = async (req, res, next) => {
@@ -113,9 +113,8 @@ const deleteNewController = async (req, res, next) => {
 };
 const updateNewController = async (req, res, next) => {
   // sacar los datos cambiados
-  let connection;
+
   try {
-    connection = await getConnection();
     const { title, subject, body } = req.body;
     const { id } = req.params;
     //validar con joi
@@ -131,117 +130,38 @@ const updateNewController = async (req, res, next) => {
     });
 
     if (validation.error) {
-      res.status(500).send(validation.error);
+      throw generateError(`${validation.error}`, 401);
     }
-    //TODO:separar en una función que vea que la noticia existe
-    const [result] = await connection.query(
-      `
-    SELECT title, subject, body, user_id FROM news WHERE id = ?
-    `,
-      [id]
-    );
 
-    const [currentNew] = result;
+    const newItem = await getNewById(id);
 
-    if (!currentNew) {
-      throw generateError('Noticia no enconrada', 404);
-    }
-    if (currentNew.user_id !== req.userId) {
+    if (newItem.user_id !== req.userId) {
       throw generateError('No tienes permiso para modificar esta noticia', 403);
     }
-
-    //cambiarlos datos
-    await connection.query(
-      `
-      UPDATE news SET title=?, subject=?, body=? WHERE id = ?
-      `,
-      [
-        title ?? currentNew.title,
-        subject ?? currentNew.subject,
-        body ?? currentNew.body,
-        id,
-      ]
-    );
+    await updateNew(title, subject, body, id);
     res.send({
       status: 'ok',
-      data: {
-        id,
-        title,
-        subject,
-        body,
-      },
+      message: `La Noticia ha sido modificada.`,
     });
   } catch (err) {
     next(err);
-  } finally {
-    if (connection) connection.release();
   }
 };
 
-const voteNew = async (req, res, next) => {
-  let connection;
-  //coseguir de params si es up o donw
-  const type = req.params.type;
-  const newId = req.params.id;
-  const userId = req.userId;
+const voteNewController = async (req, res, next) => {
+  //coseguir de params si es up o down
   try {
-    connection = await getConnection();
-    const [vote] = await connection.query(
-      `
-      SELECT id FROM votes_news WHERE news_id = ? and user_id = ?;
-      `,
-      [newId, userId]
-    );
-    const [currentVote] = await connection.query(
-      `
-      SELECT id FROM votes_news WHERE news_id = ? and user_id = ?;
-      `,
-      [newId, userId]
-    );
+    const type = req.params.type;
+    const newId = req.params.id;
+    const userId = req.userId;
 
-    if (!vote.lenght) {
-      await connection.query(
-        `
-        INSERT INTO votes_news(up_vote, donw_vote, news_id, user_id) VALUES(0, 0, ?, ?);
-        `,
-        [parseInt(newId), userId]
-      );
-      console.log('Entrada creada');
-    }
-    if (vote.lenght) {
-      await connection.query(
-        `
-        UPDATE votes_news set up_vote = 0, donw_vote = 0 WHERE id = ?;
-        `,
-        [newId]
-      );
-    }
-    //si es up,
-    if (type === 'up') {
-      await connection.query(
-        `
-        UPDATE votes_news set up_vote = 1, donw_vote = 0 WHERE id = ?;
-        `,
-        [currentVote.id]
-      );
-      console.log('voto up 1');
-    }
-    if (type === 'donw') {
-      //si es donw,
-      await connection.query(
-        `
-        UPDATE votes_news set up_vote = 0, donw_vote = 1 WHERE id = ?;
-        `,
-        [currentVote.id]
-      );
-      console.log('voto donw 1');
-    }
+    await voteNews(type, newId, userId);
+
     res.send({
       status: 'ok',
     });
   } catch (error) {
     next(error);
-    return;
   }
 };
 
@@ -251,5 +171,5 @@ module.exports = {
   getSingleNewController,
   deleteNewController,
   updateNewController,
-  voteNew,
+  voteNewController,
 };
