@@ -36,27 +36,24 @@ async function processAndSaveImage(uploadedImage) {
   return imageFileName;
 }
 
-const createKeywordIfNotExsists = async (keyword) => {
-  //conecta a la bbdd y busca con SELECT * FROM keyword WHERE keyword = ?
+const createSubjectIfNotExsists = async (subject) => {
   let connection;
   try {
     connection = await getConnection();
 
-    // se garda e un array el contenido de la racpuesta
     const [result] = await connection.query(
       `
-      SELECT * FROM keywords WHERE keyword = ?
+      SELECT * FROM subjects WHERE subject = ?
     `,
-      [keyword]
+      [subject]
     );
 
-    //si es menor que 0 creamos esa keyword en la bbdd
     if (result.length === 0) {
       await connection.query(
         `
-        INSERT INTO keywords (keyword) VALUES (?)
+        INSERT INTO subjects (subject) VALUES (?)
       `,
-        [keyword]
+        [subject]
       );
     }
   } catch (error) {
@@ -64,12 +61,11 @@ const createKeywordIfNotExsists = async (keyword) => {
   } finally {
     if (connection) connection.release();
   }
-  //si exsiste pasamos del tema =)
 };
 
 module.exports = {
   generateError,
   createPathIfNotExists,
   processAndSaveImage,
-  createKeywordIfNotExsists,
+  createSubjectIfNotExsists,
 };

@@ -85,25 +85,54 @@ const getNews = async () => {
   }
 };
 
-const createNew = async (title, subject, imageFileName = '', body, userId) => {
+const createNew = async (
+  title,
+  subject1,
+  subject2,
+  subject3,
+  imageFileName = '',
+  body,
+  userId
+) => {
   let connection;
   try {
     connection = await getConnection();
+    //TODO: poner entradilla y qutar subject
     const [result] = await connection.query(
       `
       INSERT INTO news(title, subject, image, body,user_id )
       VALUES (?, ?, ?, ?, ?);
       `,
-      [title, subject, imageFileName ?? '', body, userId]
+      [title, subject1, imageFileName ?? '', body, userId]
     );
+
     await connection.query(
       `
-      INSERT INTO keyword_news (news_id, keyword_id) 
-      SELECT news.id, keywords.id from news inner join keywords on news.subject = keywords.keyword 
+      INSERT INTO subjects_news (news_id, subject_id) 
+      SELECT news.id, subject.id from news inner join subjects on news.subject = subjects.subject
       where news.subject = ?
       `,
-      [subject]
+      [subject1 ?? '']
     );
+
+    await connection.query(
+      `
+      INSERT INTO subjects_news (news_id, subject_id) 
+      SELECT news.id, subject.id from news inner join subjects on news.subject = subjects.subject
+      where news.subject = ?
+      `,
+      [subject2 ?? '']
+    );
+
+    await connection.query(
+      `
+      INSERT INTO subjects_news (news_id, subject_id) 
+      SELECT news.id, subject.id from news inner join subjects on news.subject = subjects.subject
+      where news.subject = ?
+      `,
+      [subject3 ?? '']
+    );
+
     return result.insertId;
   } catch (err) {
     throw generateError('Error en la base de datos', 500);
@@ -112,7 +141,7 @@ const createNew = async (title, subject, imageFileName = '', body, userId) => {
   }
 };
 
-const updateNew = async (title, subject, body, id) => {
+const updateNew = async (title, subject, imageFileName = '', body, id) => {
   let connection;
 
   try {
@@ -121,12 +150,13 @@ const updateNew = async (title, subject, body, id) => {
     const currentNew = await getNewById(id);
     await connection.query(
       `
-    UPDATE news SET title=?, subject=?, body=? WHERE id = ?
+    UPDATE news SET title=?, subject=?, body=?,  image=? WHERE id = ?
     `,
       [
         title ?? currentNew.title,
         subject ?? currentNew.subject,
         body ?? currentNew.body,
+        imageFileName ?? currentNew.image,
         id,
       ]
     );
