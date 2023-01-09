@@ -8,6 +8,7 @@ const {
   createPathIfNotExists,
   createKeywordIfNotExsists,
 } = require('../helpers');
+
 const {
   getNewById,
   getDeleteNewById,
@@ -15,6 +16,7 @@ const {
   getNews,
   voteNews,
   updateNew,
+  getNewsByKeyword,
 } = require('../db/news');
 
 const getNewsController = async (req, res, next) => {
@@ -68,12 +70,13 @@ const createNewController = async (req, res, next) => {
     const id = await createNew(title, subject, imageFileName, body, userId);
     res.send({
       status: 'ok',
-      message: `Noticia creada corrartamente con id: ${id}`,
+      message: `Noticia creada correctamente con id: ${id}`,
     });
   } catch (err) {
     next(err);
   }
 };
+
 const getSingleNewController = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -81,6 +84,22 @@ const getSingleNewController = async (req, res, next) => {
     res.send({
       status: 'ok',
       data: newItem,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const searchNewController = async (req, res, next) => {
+  try {
+    const searchParam = req.query.keyword;
+    //console.log(searchParam);
+
+    const searchResult = await getNewsByKeyword(searchParam);
+
+    res.send({
+      status: 'ok',
+      data: searchResult,
     });
   } catch (error) {
     next(error);
@@ -171,5 +190,6 @@ module.exports = {
   getSingleNewController,
   deleteNewController,
   updateNewController,
+  searchNewController,
   voteNewController,
 };

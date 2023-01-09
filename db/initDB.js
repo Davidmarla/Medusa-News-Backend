@@ -9,7 +9,6 @@ async function main() {
 
     console.log('Creando base de datos y conectando...');
 
-    await connection.query('CREATE DATABASE IF NOT EXISTS News_Server;');
     await connection.query('USE News_Server;');
 
     console.log('Borrando tablas existentes...');
