@@ -41,7 +41,6 @@ async function main() {
       id INTEGER PRIMARY KEY AUTO_INCREMENT,
       title VARCHAR(150) NOT NULL,
       image VARCHAR(100),
-      subject VARCHAR(25) NOT NULL,
       body TEXT NOT NULL,
       create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       user_id INT NOT NULL,
@@ -104,10 +103,10 @@ async function main() {
     console.log('Generando noticias');
     await connection.query(
       `
-      INSERT INTO news(title, subject, body,user_id )
+      INSERT INTO news(title,body,user_id )
       VALUES
        ('Un gato asume que morirá de hambre al ver su bol de comida medio vacío',
-       'cats',
+       
        'El gato, llamado Sauron, se ha mostrado sorprendido al comprobar que su bol
        de comida está medio vacío y ha asumido que morirá de hambre. Tras confirmar
        que no le queda comida para gatos suficiente para el resto de su vida, 
@@ -116,7 +115,7 @@ async function main() {
 
       (' Un gato pierde la autoestima porque en diez años de relación no ha conseguido
       provocar un ronroneo a su dueña ni una sola vez',
-      'cats', 
+      
       'Sintiéndose culpable porque él sí ha ronroneado muchas veces, Chispi, un gato natural 
        de Cornellà de Llobregat, ha perdido toda la autoestima porque en diez años de relación 
        no ha conseguido provocar un ronroneo a su dueña ni una sola vez. El felino lo ha probado 
@@ -130,7 +129,7 @@ async function main() {
        2),
 
       ('Un gato observa con indiferencia la destrucción personal de su dueño',
-      'cats', 
+       
       'Un gato doméstico lleva dos meses asistiendo al proceso de derrumbe emocional 
       y económico de su dueño, un empresario alicantino de mediana edad en plena crisis 
       con quien ha compartido la totalidad de su vida y que, objetivamente, se lo ha dado todo.
@@ -140,14 +139,14 @@ async function main() {
        2),
 
       ('Un escritor olvida un signo de exclamación de cierre y obliga a leer toda su novela gritando',
-      'culture',
+      
        'Alfonso Guzmán Ramírez, autor de la novela «Espiral de otoño», cometió un error que ha llenado 
        esta semana las librerías de clientes descontentos exigiendo soluciones. Guzmán abrió una frase 
        del primer capítulo con una exclamación que luego olvidó cerrar, forzando a sus lectores a leer
         más de 340 páginas gritando.',
         3),
       ('Estas son las mejores empresas tecnológicas para trabajar en España',
-      'technology',
+      
        'La segunda página de Google
         La segunda página de las búsquedas de Google es siempre un lugar tranquilo al que nunca va nadie.
         Hay realmente muy poco trabajo allí. Si necesitas un empleo poco exigente pero prestigioso, 
@@ -167,7 +166,7 @@ async function main() {
       `
       INSERT INTO votes_news(up_vote, down_vote, news_id, user_id)
       VALUES
-      (0, 1, 1, 1),
+      (1, 0, 1, 1),
       (1, 0, 1, 3),
       (0, 1, 1, 2),
       (1, 0, 1, 4),

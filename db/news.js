@@ -64,19 +64,26 @@ const getNews = async () => {
     SELECT 
     news.id,
     news.title,
-    news.image, 
-    news.subject, 
+    news.image,
     news.body, 
     news.create_date, 
     news.user_id,
     upVote,
-    downVote
-    
-    from news 
-    left join 
-    (SELECT  news_id,  SUM(up_vote) as upVote , SUM(down_vote) as downVote
-    FROM votes_news group by news_id ) s
-    on (news.id = news_id) order by news.create_date DESC
+    downVote, subjects.subject
+  FROM 
+    news
+  inner join subjects_news
+  on subjects_news.id = news.id 
+  inner join subjects
+  on subjects_news.subject_id = subjects.id
+  left join 
+  (SELECT  
+  news_id,
+    SUM(up_vote) as upVote,
+    SUM(down_vote) as downVote
+  FROM votes_news group by news_id ) s
+  on news.id = s.news_id 
+  order by news.create_date DESC
     `);
 
     return news[0];
@@ -241,7 +248,6 @@ const getNewsByKeyword = async (searchParam) => {
     news.id,
     news.title,
     news.image, 
-    news.subject, 
     news.body, 
     news.create_date, 
     news.user_id,
