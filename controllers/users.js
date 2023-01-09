@@ -123,7 +123,7 @@ const updateUserProfile = async (req, res, next) => {
         );
       }
     }
-
+    //TODO:
     const updatedName = name;
     const updatedBio = bio;
     const updatedPassword1 = password1;

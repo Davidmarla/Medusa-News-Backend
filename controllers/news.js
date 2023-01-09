@@ -6,7 +6,7 @@ const { nanoid } = require('nanoid');
 const {
   generateError,
   createPathIfNotExists,
-  createKeywordIfNotExsists,
+  createSubjectIfNotExsists,
 } = require('../helpers');
 const {
   getNewById,
@@ -32,25 +32,30 @@ const getNewsController = async (req, res, next) => {
 
 const createNewController = async (req, res, next) => {
   try {
-    const { title, subject, body } = req.body;
+    const { title, subject1, subject2, subject3, body } = req.body;
     const userId = req.userId;
     const schema = joi.object().keys({
       title: joi.string().max(150).required(),
-      subject: joi.string().max(25).required(),
+      subject1: joi.string().max(25).required(),
+      subject2: joi.string().max(25),
+      subject3: joi.string().max(25),
       body: joi.string().required(),
     });
 
     const validation = await schema.validateAsync({
       title,
-      subject,
+      subject1,
+      subject2,
+      subject3,
       body,
     });
 
     if (validation.error) {
       res.status(500).send(validation.error);
     }
-    //keyword
-    await createKeywordIfNotExsists(subject);
+    await createSubjectIfNotExsists(subject1);
+    await createSubjectIfNotExsists(subject2);
+    await createSubjectIfNotExsists(subject3);
 
     let imageFileName;
 
@@ -64,8 +69,16 @@ const createNewController = async (req, res, next) => {
       imageFileName = `${nanoid(30)}.jpg`;
       await image.toFile(path.join(imagesDir, imageFileName));
     }
-    console.log('log de createNewController', userId);
-    const id = await createNew(title, subject, imageFileName, body, userId);
+
+    const id = await createNew(
+      title,
+      subject1,
+      subject2,
+      subject3,
+      imageFileName,
+      body,
+      userId
+    );
     res.send({
       status: 'ok',
       message: `Noticia creada corrartamente con id: ${id}`,
@@ -113,8 +126,6 @@ const deleteNewController = async (req, res, next) => {
   }
 };
 const updateNewController = async (req, res, next) => {
-  // sacar los datos cambiados
-
   try {
     const { title, subject, body } = req.body;
     const { id } = req.params;
@@ -139,7 +150,23 @@ const updateNewController = async (req, res, next) => {
     if (newItem.user_id !== req.userId) {
       throw generateError('No tienes permiso para modificar esta noticia', 403);
     }
-    await updateNew(title, subject, body, id);
+
+    await createSubjectIfNotExsists(subject);
+    let imageFileName;
+
+    if (req.files && req.files.image) {
+      const imagesDir = path.join(__dirname, process.env.UPLOADS_DIRNEWS);
+
+      await createPathIfNotExists(imagesDir);
+
+      const image = sharp(req.files.image.data);
+      image.resize(1000);
+
+      imageFileName = `${nanoid(30)}.jpg`;
+      await image.toFile(path.join(imagesDir, imageFileName));
+    }
+
+    await updateNew(title, subject, body, imageFileName, id);
     res.send({
       status: 'ok',
       message: `La Noticia ha sido modificada.`,

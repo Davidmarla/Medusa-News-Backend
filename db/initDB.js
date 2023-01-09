@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { getConnection } = require('./db');
+const bcrypt = require('bcrypt');
 
 async function main() {
   let connection;
@@ -15,8 +16,8 @@ async function main() {
     console.log('Borrando tablas existentes...');
 
     await connection.query('DROP TABLE IF EXISTS votes_news;');
-    await connection.query('DROP TABLE IF EXISTS keyword_news;');
-    await connection.query('DROP TABLE IF EXISTS keywords;');
+    await connection.query('DROP TABLE IF EXISTS subjects_news;');
+    await connection.query('DROP TABLE IF EXISTS subjects;');
     await connection.query('DROP TABLE IF EXISTS news;');
     await connection.query('DROP TABLE IF EXISTS users;');
 
@@ -50,17 +51,17 @@ async function main() {
   `);
 
     await connection.query(`
-    CREATE TABLE keywords(
+    CREATE TABLE subjects(
       id INTEGER PRIMARY KEY AUTO_INCREMENT,
-      keyword VARCHAR(20) UNIQUE NOT NULL
+      subject VARCHAR(20) UNIQUE NOT NULL
   )`);
 
     await connection.query(`
-    CREATE TABLE keyword_news(
+    CREATE TABLE subjects_news(
       id INTEGER PRIMARY KEY AUTO_INCREMENT,
-      keyword_id INTEGER NOT NULL,
+      subject_id INTEGER NOT NULL,
       news_id INTEGER NOT NULL,
-      FOREIGN KEY (keyword_id) REFERENCES keywords(id),
+      FOREIGN KEY (subject_id) REFERENCES subjects(id),
       FOREIGN KEY (news_id) REFERENCES news(id)
     )`);
 
@@ -74,6 +75,161 @@ async function main() {
       FOREIGN KEY (user_id) REFERENCES users(id),
       FOREIGN KEY (news_id) REFERENCES news(id)
     )`);
+
+    const password = 'root1234';
+    const passwordHash = await bcrypt.hash(password, 8);
+    console.log('Generando usuarios');
+    await connection.query(
+      `
+    INSERT INTO users 
+    (user_name, email, password) 
+    VALUES
+    ('David', 'david@gmail.com', ?),
+    ('Nacho', 'nacho@gmail.com', ?),
+    ('Rocio', 'rocio@gmail.com', ?),
+    ('Gael', 'gael@gmail.com', ?),
+    ('Andres', 'andres@gmail.com', ?),
+    ('Eva', 'eva@gmail.com', ?),
+    ('Alex', 'alex@gmail.com', ?)
+    `,
+      [
+        passwordHash,
+        passwordHash,
+        passwordHash,
+        passwordHash,
+        passwordHash,
+        passwordHash,
+        passwordHash,
+      ]
+    );
+    console.log('Generando noticias');
+    await connection.query(
+      `
+      INSERT INTO news(title, subject, body,user_id )
+      VALUES
+       ('Un gato asume que morirá de hambre al ver su bol de comida medio vacío',
+       'cats',
+       'El gato, llamado Sauron, se ha mostrado sorprendido al comprobar que su bol
+       de comida está medio vacío y ha asumido que morirá de hambre. Tras confirmar
+       que no le queda comida para gatos suficiente para el resto de su vida, 
+       se ha preparado para morir.', 
+      1),
+
+      (' Un gato pierde la autoestima porque en diez años de relación no ha conseguido
+      provocar un ronroneo a su dueña ni una sola vez',
+      'cats', 
+      'Sintiéndose culpable porque él sí ha ronroneado muchas veces, Chispi, un gato natural 
+       de Cornellà de Llobregat, ha perdido toda la autoestima porque en diez años de relación 
+       no ha conseguido provocar un ronroneo a su dueña ni una sola vez. El felino lo ha probado 
+       todo, desde despertarla por la noche hasta frotarse con su lomo por la pierna o arañar las 
+       cortinas, pero no ha conseguido nada.
+       La autoconfianza de este gato está absolutamente mermada: se siente feo, inútil y teme que
+       en cualquier momento su dueña se vaya con un gato mejor. “Hemos empezado a dormir separados”,
+       admite el animal. El gato se ha cansado de que su dueña lo eche de la cama y ha empezado a 
+       dormir en el sofá. -No sé si ronronea cuando yo no estoy, pero conmigo delante jamás-, 
+       lamenta.',
+       2),
+
+      ('Un gato observa con indiferencia la destrucción personal de su dueño',
+      'cats', 
+      'Un gato doméstico lleva dos meses asistiendo al proceso de derrumbe emocional 
+      y económico de su dueño, un empresario alicantino de mediana edad en plena crisis 
+      con quien ha compartido la totalidad de su vida y que, objetivamente, se lo ha dado todo.
+      El animal ha pasado la mañana jugando con unas pastillas de colores que ha encontrado en el
+       suelo y que cayeron de la boca del dueño, que yace aún en el sofá raído del salón desnudo y 
+       con ganas de morir.',
+       2),
+
+      ('Un escritor olvida un signo de exclamación de cierre y obliga a leer toda su novela gritando',
+      'culture',
+       'Alfonso Guzmán Ramírez, autor de la novela «Espiral de otoño», cometió un error que ha llenado 
+       esta semana las librerías de clientes descontentos exigiendo soluciones. Guzmán abrió una frase 
+       del primer capítulo con una exclamación que luego olvidó cerrar, forzando a sus lectores a leer
+        más de 340 páginas gritando.',
+        3),
+      ('Estas son las mejores empresas tecnológicas para trabajar en España',
+      'technology',
+       'La segunda página de Google
+        La segunda página de las búsquedas de Google es siempre un lugar tranquilo al que nunca va nadie.
+        Hay realmente muy poco trabajo allí. Si necesitas un empleo poco exigente pero prestigioso, 
+        es perfecto.
+        La -start up- de tu colega Rubén
+        Rubén busca un colega con el que encerrarse en el garaje de sus padres para fundar la 
+        nueva Apple.Tú te apuntas siempre a las partidas del Catán. Y al fútbol. Rubén cuenta contigo.
+        Tintinder
+        Juanjo Martínez y Rosa Gamboa son dos programadores y fans de Tintín que han desarrollado 
+        una app para que los amantes de este héroe del cómic puedan quedar entre ellos. Si te gusta 
+        Tintín, usas Tinder y te dedicas al desarrollo y mantenimiento de aplicaciones, llámales.',
+        3)
+      `
+    );
+    console.log('Generando votaciones');
+    await connection.query(
+      `
+      INSERT INTO votes_news(up_vote, down_vote, news_id, user_id)
+      VALUES
+      (0, 1, 1, 1),
+      (1, 0, 1, 3),
+      (0, 1, 1, 2),
+      (1, 0, 1, 4),
+      (0, 1, 1, 5),
+      (0, 1, 1, 6),
+      (1, 0, 1, 7),
+
+      (0, 1, 2, 1),
+      (1, 0, 2, 3),
+      (0, 1, 2, 2),
+      (1, 0, 2, 4),
+      (0, 1, 2, 5),
+      (1, 0, 2, 6),
+      (0, 1, 2, 7),
+
+      (0, 1, 3, 1),
+      (1, 0, 3, 3),
+      (0, 1, 3, 2),
+      (1, 0, 3, 4),
+      (0, 1, 3, 5),
+      (0, 1, 3, 6),
+      (1, 0, 3, 7),
+
+      (0, 1, 4, 1),
+      (1, 0, 4, 3),
+      (0, 1, 4, 2),
+      (1, 0, 4, 4),
+      (0, 1, 4, 5),
+      (0, 1, 4, 6),
+      (1, 0, 4, 7),
+
+      (0, 1, 5, 1),
+      (1, 0, 5, 3),
+      (0, 1, 5, 2),
+      (1, 0, 5, 4),
+      (0, 1, 5, 5),
+      (1, 0, 5, 6),
+      (0, 1, 5, 7);
+
+      `
+    );
+    console.log('Creando temas');
+    await connection.query(
+      `
+      INSERT INTO subjects (subject) 
+      VALUES 
+      ('technology'),
+      ('cats'),
+      ('culture')
+    `
+    );
+    await connection.query(
+      `
+      INSERT INTO subjects_news (news_id, subject_id) VALUES 
+      (1,2),
+      (2,2),
+      (3,2),
+      (4,3),
+      (5,1)
+    `
+    );
   } catch (error) {
     console.error(error);
   } finally {
