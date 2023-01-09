@@ -12,6 +12,7 @@ const {
   deleteNewController,
   updateNewController,
   voteNewController,
+  searchNewController,
 } = require('./controllers/news');
 const app = express();
 
@@ -35,7 +36,7 @@ app.post('/', authUser, createNewController);
 app.get('/new/:id', getSingleNewController);
 app.delete('/new/:id', authUser, deleteNewController);
 app.put('/new/:id', authUser, updateNewController);
-//TODO: app.get('/keyword', getNewsKeywordController);
+app.get('/search', searchNewController);
 app.put('/:id/:type', authUser, voteNewController);
 
 //Endpoints de usuario

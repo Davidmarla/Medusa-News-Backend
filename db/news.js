@@ -55,6 +55,7 @@ const getDeleteNewById = async (id) => {
     if (connection) connection.release();
   }
 };
+
 const getNews = async () => {
   let connection;
   try {
@@ -76,7 +77,6 @@ const getNews = async () => {
     (SELECT  news_id,  SUM(up_vote) as upVote , SUM(down_vote) as downVote
     FROM votes_news group by news_id ) s
     on (news.id = news_id) order by news.create_date DESC
-    
     `);
 
     return news[0];
@@ -84,6 +84,7 @@ const getNews = async () => {
     if (connection) connection.release();
   }
 };
+
 const createNew = async (title, subject, imageFileName = '', body, userId) => {
   let connection;
   try {
@@ -195,6 +196,48 @@ const voteNews = async (type, newId, userId) => {
     if (connection) connection.release();
   }
 };
+
+const getNewsByKeyword = async (searchParam) => {
+  let connection;
+
+  let finder = searchParam.toLowerCase();
+  console.log(finder, searchParam);
+
+  try {
+    connection = await getConnection();
+    const news = await connection.query(
+      ` 
+    SELECT 
+    news.id,
+    news.title,
+    news.image, 
+    news.subject, 
+    news.body, 
+    news.create_date, 
+    news.user_id,
+    upVote,
+    downVote
+    FROM news 
+    left join 
+    (SELECT  news_id,  SUM(up_vote) as upVote , SUM(down_vote) as downVote
+    FROM votes_news group by news_id ) s
+    on (news.id = news_id) 
+    WHERE news.subject LIKE ? ORDER BY news.create_date DESC
+    `,
+      [`%${finder}%`]
+    );
+
+    if (news[0].length === 0) {
+      throw generateError('No hay ningún tema para listar', 500);
+    }
+
+    console.log(news);
+    return news[0];
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
 module.exports = {
   getNewById,
   getDeleteNewById,
@@ -202,4 +245,5 @@ module.exports = {
   getNews,
   voteNews,
   updateNew,
+  getNewsByKeyword,
 };
