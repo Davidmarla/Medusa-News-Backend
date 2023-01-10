@@ -178,11 +178,21 @@ const insertSubjectNew = async (subject, subject2, subject3) => {
   }
 };
 
-const updateNew = async (title, introduction, imageFileName = '', body, id) => {
+const updateNew = async (
+  title,
+  introduction,
+  subject,
+  subject2,
+  subject3,
+  imageFileName = '',
+  body,
+  id
+) => {
   let connection;
 
   try {
     connection = await getConnection();
+    console.log('BD', id);
 
     const currentNew = await getNewById(id);
     await connection.query(
@@ -198,6 +208,7 @@ const updateNew = async (title, introduction, imageFileName = '', body, id) => {
       ]
     );
   } catch (err) {
+    console.log(err);
     throw generateError('Error en la base de datos', 500);
   } finally {
     if (connection) connection.release();
