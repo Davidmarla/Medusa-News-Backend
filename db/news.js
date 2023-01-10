@@ -13,21 +13,30 @@ const getNewById = async (id) => {
     const [result] = await connection.query(
       `
       SELECT 
-      news.id,
-      news.title,
-      news.image, 
-      news.subject, 
-      news.body, 
-      news.create_date, 
-      news.user_id,
-      upVote,
-      downVote
-      
-      from news 
-      left join 
-      (SELECT  news_id,  SUM(up_vote) as upVote , SUM(down_vote) as downVote
-      FROM votes_news group by news_id ) s
-      on (news.id = news_id) where news.id = ?
+    news.id,
+    news.title,
+    news.introduction,
+    news.image,
+    news.body, 
+    news.create_date, 
+    news.user_id,
+    upVote,
+    downVote, 
+    subjects.subject
+  FROM 
+    news
+  inner join subjects_news
+  on subjects_news.id = news.id 
+  inner join subjects
+  on subjects_news.subject_id = subjects.id
+  left join 
+  (SELECT  
+  news_id,
+    SUM(up_vote) as upVote,
+    SUM(down_vote) as downVote
+  FROM votes_news group by news_id ) s
+  on news.id = s.news_id 
+  where news.id = ?
     `,
       [id]
     );
@@ -73,7 +82,8 @@ const getNews = async () => {
     news.create_date, 
     news.user_id,
     upVote,
-    downVote, subjects.subject
+    downVote, 
+    subjects.subject
   FROM 
     news
   inner join subjects_news
@@ -161,30 +171,84 @@ const insertSubjectNew = async (subject, subject2, subject3) => {
       );
     }
   } catch (error) {
-    console.log(error);
+    throw generateError('Error en la base de datos', 500);
   }
 };
 
-const updateNew = async (title, introduction, imageFileName = '', body, id) => {
+const updateNew = async (
+  title,
+  introduction,
+  subject,
+  subject2,
+  subject3,
+  imageFileName = '',
+  body,
+  id
+) => {
   let connection;
 
   try {
     connection = await getConnection();
 
     const currentNew = await getNewById(id);
+
     await connection.query(
       `
     UPDATE news SET title=?, introduction=?, body=?,  image=? WHERE id = ?
     `,
       [
         title ?? currentNew.title,
-        body ?? currentNew.body,
         introduction ?? currentNew.introduction,
+        body ?? currentNew.body,
         imageFileName ?? currentNew.image,
         id,
       ]
     );
+    //update subject
+    const newId = currentNew.id;
+    if (subject !== undefined) {
+      const currentSubjectId = await getSubjectId(currentNew.subject);
+      const subjectId = await getSubjectId(subject);
+      console.log('pataca', subjectId, currentSubjectId, newId);
+
+      await connection.query(
+        `
+        UPDATE subjects_news SET  subject_id=? WHERE subject_id=? and news_id=?  
+        
+        `,
+        [subjectId, currentSubjectId, newId]
+      );
+    }
+
+    //En un futuro se podran edita todos los temas.
+    /* if (subject2 !== undefined) {
+      const currentSubjectId2 = await getSubjectId(currentNew.subject2);
+      const subjectId2 = await getSubjectId(subject);
+
+      console.log('pataca2', subjectId2, currentSubjectId2, newId);
+      await connection.query(
+        `
+        UPDATE subjects_news SET  subject_id=? WHERE subject_id=? and news_id=?  
+        
+        `,
+        [subjectId2, currentSubjectId2, newId]
+      );
+    }
+    if (subject3 !== undefined) {
+      const currentSubjectId3 = await getSubjectId(currentNew.subject3);
+      const subjectId3 = await getSubjectId(subject);
+      console.log('pataca3', subjectId3, currentSubjectId3, newId);
+
+      await connection.query(
+        `
+        UPDATE subjects_news SET  subject_id=? WHERE subject_id=? and news_id=?  
+        
+        `,
+        [subjectId3, currentSubjectId3, newId]
+      );
+    } */
   } catch (err) {
+    console.log(err);
     throw generateError('Error en la base de datos', 500);
   } finally {
     if (connection) connection.release();
