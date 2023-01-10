@@ -55,4 +55,4 @@ APP listening on port 8888
 ```
 
 Pues ya está la **API** lista para usarse y el servidor corriendo.
-Ahora desde este [enlace]TODO:(insertar enlace Postman aquí) podrás utilizar todas las funcionalidades desde tu navegador con la herramienta **Postman** que fue utilizada para testear todos los _endpoints_.
+Ahora desde este [enlace](https://lively-escape-602067.postman.co/workspace/ProyectoNews~80820a40-7334-4843-8458-e13eda568925/collection/24930100-a6e1b07c-1d40-4152-9308-0fb89d1abaff?action=share&creator=24930100) podrás utilizar todas las funcionalidades desde tu navegador con la herramienta **Postman** que fue utilizada para testear todos los _endpoints_.
