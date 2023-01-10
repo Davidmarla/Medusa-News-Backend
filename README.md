@@ -32,7 +32,7 @@ node db/initDB.js
 
 Por supuesto, eres libre de testear todos los _endpoints_ de este proyecto por tu cuenta (crear tu propio usuario y noticias, por ejemplo) 😉
 
-## Corriendo el servidor
+## Corriendo el servidor ⚙️
 
 Cuando ya tengas los pre-requisitos listos, podrás lanzar el servidor con el siguiente comando de la terminal en la misma ruta que el archivo _server.js_ :
 
