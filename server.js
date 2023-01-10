@@ -30,6 +30,11 @@ app.use(bodyParser.json());
 app.use(fileUpload());
 app.use('./images', express.static('./images'));
 
+//Endpoints de usuario
+app.post('/user', newUserController);
+app.post('/login', loginController);
+app.put('/profile/:id', authUser, updateUserProfile);
+
 //Endpoints de noticias
 app.get('/', getNewsController);
 app.post('/', authUser, createNewController);
@@ -37,12 +42,7 @@ app.get('/new/:id', getSingleNewController);
 app.delete('/new/:id', authUser, deleteNewController);
 app.put('/new/:id', authUser, updateNewController);
 app.get('/search', searchNewController);
-// app.put('/:id/:type', authUser, voteNewController);
-
-//Endpoints de usuario
-app.post('/user', newUserController);
-app.post('/login', loginController);
-app.put('/profile/:id', authUser, updateUserProfile);
+app.put('/:id/:type', authUser, voteNewController);
 
 //Middleware que gestiona rutas no definidas
 app.use((req, res) => {
