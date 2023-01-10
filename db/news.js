@@ -264,18 +264,26 @@ const getNewsByKeyword = async (searchParam) => {
     SELECT 
     news.id,
     news.title,
-    news.image, 
+    news.image,
     news.body, 
     news.create_date, 
     news.user_id,
     upVote,
-    downVote
-    FROM news 
-    left join 
-    (SELECT  news_id,  SUM(up_vote) as upVote , SUM(down_vote) as downVote
-    FROM votes_news group by news_id ) s
-    on (news.id = news_id) 
-    WHERE news.subject LIKE ? ORDER BY news.create_date DESC
+    downVote, subjects.subject
+  FROM 
+    news
+  inner join subjects_news
+  on subjects_news.id = news.id 
+  inner join subjects
+  on subjects_news.subject_id = subjects.id
+  left join 
+  (SELECT  
+  news_id,
+    SUM(up_vote) as upVote,
+    SUM(down_vote) as downVote
+  FROM votes_news group by news_id ) s
+  on news.id = s.news_id  
+    WHERE subjects.subject LIKE ? ORDER BY news.create_date DESC
     `,
       [`%${finder}%`]
     );

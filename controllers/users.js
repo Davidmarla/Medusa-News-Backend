@@ -11,9 +11,24 @@ const newUserController = async (req, res, next) => {
     const { user_name, email, password } = req.body;
 
     const schema = joi.object().keys({
-      user_name: joi.string().min(4).max(100).required(),
-      email: joi.string().email().required(),
-      password: joi.string().min(6),
+      user_name: joi
+        .string()
+        .min(4)
+        .max(100)
+        .required()
+        .error(
+          generateError('Nombre de usuario mín. 4 caracteres máx. 100', 400)
+        ),
+      email: joi
+        .string()
+        .email()
+        .required()
+        .error(generateError('Debe ser un email válido', 400)),
+      password: joi
+        .string()
+        .min(8)
+        .required()
+        .error(generateError('Password mín. 8 caracteres', 400)),
     });
 
     const validation = await schema.validateAsync({
@@ -44,8 +59,16 @@ const loginController = async (req, res, next) => {
 
     //Se valida el email y password
     const schema = joi.object().keys({
-      email: joi.string().email().required(),
-      password: joi.string().min(8),
+      email: joi
+        .string()
+        .email()
+        .required()
+        .error(generateError('Debe ser un email válido', 400)),
+      password: joi
+        .string()
+        .min(8)
+        .required()
+        .error(generateError('Password mín. 8 caracteres', 400)),
     });
 
     const validation = await schema.validateAsync({ email, password });
@@ -123,7 +146,7 @@ const updateUserProfile = async (req, res, next) => {
         );
       }
     }
-    //TODO:
+
     const updatedName = name;
     const updatedBio = bio;
     const updatedPassword1 = password1;

@@ -116,7 +116,10 @@ const getSingleNewController = async (req, res, next) => {
 const searchNewController = async (req, res, next) => {
   try {
     const searchParam = req.query.keyword;
-    //console.log(searchParam);
+
+    if (!searchParam) {
+      throw generateError('Introduzca un término de búsqueda', 400);
+    }
 
     const searchResult = await getNewsByKeyword(searchParam);
 
