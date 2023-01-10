@@ -156,13 +156,16 @@ const deleteNewController = async (req, res, next) => {
 };
 const updateNewController = async (req, res, next) => {
   try {
-    const { title, subject, body } = req.body;
+    const { title, introduction, subject, subject2, subject3, body } = req.body;
     const { id } = req.params;
     //validar con joi
     const schema = joi.object().keys({
       title: joi.string().max(150),
-      subject: joi.string().max(25),
       body: joi.string(),
+      introduction: joi.string().max(300),
+      subject: joi.string().max(25),
+      subject2: joi.string().max(25),
+      subject3: joi.string().max(25),
     });
     const validation = await schema.validateAsync({
       title,
@@ -179,8 +182,8 @@ const updateNewController = async (req, res, next) => {
     if (newItem.user_id !== req.userId) {
       throw generateError('No tienes permiso para modificar esta noticia', 403);
     }
-
     await createSubjectIfNotExsists(subject);
+
     let imageFileName;
 
     if (req.files && req.files.image) {
@@ -195,7 +198,16 @@ const updateNewController = async (req, res, next) => {
       await image.toFile(path.join(imagesDir, imageFileName));
     }
 
-    await updateNew(title, subject, body, imageFileName, id);
+    await updateNew(
+      title,
+      introduction,
+      subject,
+      subject2,
+      subject3,
+      (imageFileName = ''),
+      body,
+      id
+    );
     res.send({
       status: 'ok',
       message: `La Noticia ha sido modificada.`,
