@@ -137,7 +137,7 @@ const deleteNewController = async (req, res, next) => {
     const { id } = req.params;
 
     const newItem = await getNewById(id);
-
+    console.log(newItem);
     if (req.userId !== newItem.user_id) {
       throw generateError(
         'Estás intentando borrar una noticia que no es tuya',
@@ -230,6 +230,7 @@ const voteNewController = async (req, res) => {
 
     res.send({
       status: 'ok',
+      message: 'Voto ha sido registrasdo',
     });
   } catch (error) {
     throw generateError('Error en la base de datos', 500);
