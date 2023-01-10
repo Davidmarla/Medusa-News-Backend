@@ -8,6 +8,13 @@ Esta **API** permite varias funcionalidades como son el registro de usuarios, lo
 
 Sigue estos pasos para poder usar esta **API** en tu máquina local a efectos de pruebas o desarrollo. Clona el repositorio en la carpeta que prefieras y continúa leyendo.
 
+Recuerda modificar el archivo _.env_ de la ruta base en estas dos variables de _usuario_ y _password_ para que conecte con tu _base de datos_:
+
+```
+MYSQL_USER="tu_usuario"
+MYSQL_PASSWORD="tu_password"
+```
+
 ### Pre-requisitos 📋
 
 ❗ _Importante_ ❗
@@ -55,4 +62,4 @@ APP listening on port 8888
 ```
 
 Pues ya está la **API** lista para usarse y el servidor corriendo.
-Ahora desde este [enlace](https://lively-escape-602067.postman.co/workspace/ProyectoNews~80820a40-7334-4843-8458-e13eda568925/collection/24930100-a6e1b07c-1d40-4152-9308-0fb89d1abaff?action=share&creator=24930100) podrás utilizar todas las funcionalidades desde tu navegador con la herramienta **Postman** que fue utilizada para testear todos los _endpoints_.
+Ahora desde este [enlace](https://lively-escape-602067.postman.co/workspace/ProyectoNews~80820a40-7334-4843-8458-e13eda568925/collection/24930100-a6e1b07c-1d40-4152-9308-0fb89d1abaff?action=share&creator=24930100) podrás utilizar todas las funcionalidades, que se detallarán a continuación, desde tu navegador con la herramienta **Postman** que fue utilizada para testear todos los _endpoints_.
