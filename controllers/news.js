@@ -220,7 +220,7 @@ const updateNewController = async (req, res, next) => {
   }
 };
 
-const voteNewController = async (req, res, next) => {
+const voteNewController = async (req, res) => {
   try {
     const type = req.params.type;
     const newId = req.params.id;
@@ -232,7 +232,7 @@ const voteNewController = async (req, res, next) => {
       status: 'ok',
     });
   } catch (error) {
-    next(error);
+    throw generateError('Error en la base de datos', 500);
   }
 };
 

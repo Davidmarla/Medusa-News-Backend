@@ -37,7 +37,7 @@ app.get('/new/:id', getSingleNewController);
 app.delete('/new/:id', authUser, deleteNewController);
 app.put('/new/:id', authUser, updateNewController);
 app.get('/search', searchNewController);
-app.put('/:id/:type', authUser, voteNewController);
+// app.put('/:id/:type', authUser, voteNewController);
 
 //Endpoints de usuario
 app.post('/user', newUserController);
