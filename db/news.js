@@ -1,4 +1,8 @@
-const { generateError } = require('../helpers');
+const {
+  generateError,
+  getSubjectId,
+  getLastNewCreatedId,
+} = require('../helpers');
 const { getConnection } = require('./db');
 
 const getNewById = async (id) => {
@@ -94,9 +98,7 @@ const getNews = async () => {
 
 const createNew = async (
   title,
-  subject1,
-  subject2,
-  subject3,
+  introduction,
   imageFileName = '',
   body,
   userId
@@ -104,41 +106,15 @@ const createNew = async (
   let connection;
   try {
     connection = await getConnection();
-    //TODO: poner entradilla y qutar subject
+
     const [result] = await connection.query(
       `
-      INSERT INTO news(title, subject, image, body,user_id )
+      INSERT INTO news(title, introduction, image, body,user_id )
       VALUES (?, ?, ?, ?, ?);
       `,
-      [title, subject1, imageFileName ?? '', body, userId]
+      [title, introduction, imageFileName ?? '', body, userId]
     );
-
-    await connection.query(
-      `
-      INSERT INTO subjects_news (news_id, subject_id) 
-      SELECT news.id, subject.id from news inner join subjects on news.subject = subjects.subject
-      where news.subject = ?
-      `,
-      [subject1 ?? '']
-    );
-
-    await connection.query(
-      `
-      INSERT INTO subjects_news (news_id, subject_id) 
-      SELECT news.id, subject.id from news inner join subjects on news.subject = subjects.subject
-      where news.subject = ?
-      `,
-      [subject2 ?? '']
-    );
-
-    await connection.query(
-      `
-      INSERT INTO subjects_news (news_id, subject_id) 
-      SELECT news.id, subject.id from news inner join subjects on news.subject = subjects.subject
-      where news.subject = ?
-      `,
-      [subject3 ?? '']
-    );
+    console.log(result);
 
     return result.insertId;
   } catch (err) {
@@ -148,7 +124,48 @@ const createNew = async (
   }
 };
 
-const updateNew = async (title, subject, imageFileName = '', body, id) => {
+const insertSubjectNew = async (subject, subject2, subject3) => {
+  let connection;
+  try {
+    connection = await getConnection();
+
+    const newId = await getLastNewCreatedId();
+    console.log('Insert', subject);
+    const subjectId = await getSubjectId(subject);
+
+    await connection.query(
+      `
+          INSERT INTO subjects_news (news_id, subject_id) 
+          VAlUES (?, ?)
+          `,
+      [newId, subjectId]
+    );
+    if (subject2 !== undefined) {
+      const subjectId2 = await getSubjectId(subject2);
+      await connection.query(
+        `
+            INSERT INTO subjects_news (news_id, subject_id) 
+            VAlUES (?, ?)
+            `,
+        [newId, subjectId2]
+      );
+    }
+    if (subject3 !== undefined) {
+      const subjectId3 = await getSubjectId(subject3);
+      await connection.query(
+        `
+            INSERT INTO subjects_news (news_id, subject_id) 
+            VAlUES (?, ?)
+            `,
+        [newId, subjectId3]
+      );
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const updateNew = async (title, introduction, imageFileName = '', body, id) => {
   let connection;
 
   try {
@@ -157,12 +174,12 @@ const updateNew = async (title, subject, imageFileName = '', body, id) => {
     const currentNew = await getNewById(id);
     await connection.query(
       `
-    UPDATE news SET title=?, subject=?, body=?,  image=? WHERE id = ?
+    UPDATE news SET title=?, introduction=?, body=?,  image=? WHERE id = ?
     `,
       [
         title ?? currentNew.title,
-        subject ?? currentNew.subject,
         body ?? currentNew.body,
+        introduction ?? currentNew.introduction,
         imageFileName ?? currentNew.image,
         id,
       ]
@@ -282,4 +299,5 @@ module.exports = {
   voteNews,
   updateNew,
   getNewsByKeyword,
+  insertSubjectNew,
 };
