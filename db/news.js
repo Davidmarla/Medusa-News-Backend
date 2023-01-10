@@ -49,8 +49,7 @@ const getDeleteNewById = async (id) => {
     await connection.query(
       `
     SET FOREIGN_KEY_CHECKS=0;
-    `,
-      [id]
+    `
     );
 
     await connection.query(
@@ -63,8 +62,7 @@ const getDeleteNewById = async (id) => {
     await connection.query(
       `
     SET FOREIGN_KEY_CHECKS=1;
-    `,
-      [id]
+    `
     );
 
     return;
