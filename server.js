@@ -30,7 +30,7 @@ app.use(bodyParser.json());
 app.use(fileUpload());
 app.use('./images', express.static('./images'));
 
-//endpoints NEWS
+//Endpoints de noticias
 app.get('/', getNewsController);
 app.post('/', authUser, createNewController);
 app.get('/new/:id', getSingleNewController);
