@@ -63,3 +63,32 @@ APP listening on port 8888
 
 Pues ya está la **API** lista para usarse y el servidor corriendo.
 Ahora desde este [enlace](https://lively-escape-602067.postman.co/workspace/ProyectoNews~80820a40-7334-4843-8458-e13eda568925/collection/24930100-a6e1b07c-1d40-4152-9308-0fb89d1abaff?action=share&creator=24930100) podrás utilizar todas las funcionalidades, que se detallarán a continuación, desde tu navegador con la herramienta **Postman** que fue utilizada para testear todos los _endpoints_.
+
+## Endpoints 🔚
+
+### De usuario
+
+- '/user' Permite hacer el registro de un usuario (POST)
+- '/login' Para hacer login y devuelve un token de usuario (POST)
+- '/profile/:id' Permite editar los datos de usuario (Nombre, biografía, password) (PUT)
+
+### De noticias
+
+- '/' Lista todas las noticias por orden de fecha más reciente (GET)
+- '/' Permite crear una noticia a un usuario registrado con autenticación (POST)
+- '/new/:id' Muestra una sola noticia por su id (GET)
+- '/new/:id' Permite borrar una noticia propia a un usuario registrado (DELETE)
+- '/new/:id' Permite editar una noticia propia a un usuario registrado (PUT)
+- '/search' Buscar noticias con el parámetro indicado en la query string, keyword=valor (GET)
+- '/:id/:type' Da un voto positivo o negativo a una noticia '/1/up' o /1/down (PUT)
+
+## Programas usados 🛠️
+
+- Visual Studio Code
+- Mysql Workbench
+- Postman
+- node
+
+## Autores
+
+Nacho V. Bordera y David Martínez
