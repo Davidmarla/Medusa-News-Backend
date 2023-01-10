@@ -84,7 +84,8 @@ const getNews = async () => {
     news.create_date, 
     news.user_id,
     upVote,
-    downVote, subjects.subject
+    downVote, 
+    subjects.subject
   FROM 
     news
   inner join subjects_news
@@ -172,36 +173,89 @@ const insertSubjectNew = async (subject, subject2, subject3) => {
       );
     }
   } catch (error) {
-    console.log(error);
+    throw generateError('Error en la base de datos', 500);
   }
 };
 
-const updateNew = async (title, introduction, imageFileName = '', body, id) => {
+const updateNew = async (
+  title,
+  introduction,
+  subject,
+  subject2,
+  subject3,
+  imageFileName = '',
+  body,
+  id
+) => {
   let connection;
 
   try {
     connection = await getConnection();
 
     const currentNew = await getNewById(id);
+
     await connection.query(
       `
     UPDATE news SET title=?, introduction=?, body=?,  image=? WHERE id = ?
     `,
       [
         title ?? currentNew.title,
-        body ?? currentNew.body,
         introduction ?? currentNew.introduction,
+        body ?? currentNew.body,
         imageFileName ?? currentNew.image,
         id,
       ]
     );
+    //update subject
+    const newId = currentNew.id;
+
+    if (subject !== undefined) {
+      const currentSubjectId = await getSubjectId(currentNew.subject);
+      const subjectId = await getSubjectId(subject);
+
+      await connection.query(
+        `
+        UPDATE subjects_news SET  subject_id=? WHERE subject_id=? and news_id=?  
+        
+        `,
+        [subjectId, currentSubjectId, newId]
+      );
+    }
+
+    //En un futuro se podran edita todos los temas.
+    /* if (subject2 !== undefined) {
+      const currentSubjectId2 = await getSubjectId(currentNew.subject2);
+      const subjectId2 = await getSubjectId(subject);
+
+      console.log('pataca2', subjectId2, currentSubjectId2, newId);
+      await connection.query(
+        `
+        UPDATE subjects_news SET  subject_id=? WHERE subject_id=? and news_id=?  
+        
+        `,
+        [subjectId2, currentSubjectId2, newId]
+      );
+    }
+    if (subject3 !== undefined) {
+      const currentSubjectId3 = await getSubjectId(currentNew.subject3);
+      const subjectId3 = await getSubjectId(subject);
+      console.log('pataca3', subjectId3, currentSubjectId3, newId);
+
+      await connection.query(
+        `
+        UPDATE subjects_news SET  subject_id=? WHERE subject_id=? and news_id=?  
+        
+        `,
+        [subjectId3, currentSubjectId3, newId]
+      );
+    } */
   } catch (err) {
+    console.log(err);
     throw generateError('Error en la base de datos', 500);
   } finally {
     if (connection) connection.release();
   }
 };
-
 const voteNews = async (type, newId, userId) => {
   let connection;
   try {

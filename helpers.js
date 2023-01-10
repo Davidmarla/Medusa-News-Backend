@@ -66,7 +66,7 @@ const createSubjectIfNotExsists = async (subject) => {
 
 const getSubjectId = async (subject) => {
   let connection;
-  console.log('getSubId', subject);
+
   try {
     connection = await getConnection();
 
