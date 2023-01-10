@@ -40,6 +40,7 @@ async function main() {
     CREATE TABLE news (
       id INTEGER PRIMARY KEY AUTO_INCREMENT,
       title VARCHAR(150) NOT NULL,
+      introduction VARCHAR(500),
       image VARCHAR(100),
       body TEXT NOT NULL,
       create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -103,19 +104,19 @@ async function main() {
     console.log('Generando noticias');
     await connection.query(
       `
-      INSERT INTO news(title,body,user_id )
+      INSERT INTO news(title,introduction, body,user_id )
       VALUES
        ('Un gato asume que morirá de hambre al ver su bol de comida medio vacío',
-       
+       'SE IMAGINA EL DEMACRADO CADÁVER QUE DEJARÁ TRAS DE SÍ',
        'El gato, llamado Sauron, se ha mostrado sorprendido al comprobar que su bol
        de comida está medio vacío y ha asumido que morirá de hambre. Tras confirmar
        que no le queda comida para gatos suficiente para el resto de su vida, 
        se ha preparado para morir.', 
       1),
 
-      (' Un gato pierde la autoestima porque en diez años de relación no ha conseguido
+      ('Un gato pierde la autoestima porque en diez años de relación no ha conseguido
       provocar un ronroneo a su dueña ni una sola vez',
-      
+      'LOS VETERINARIOS RECOMIENDAN FINGIR EL RONRONEO POR EL BIEN DEL ANIMAL',
       'Sintiéndose culpable porque él sí ha ronroneado muchas veces, Chispi, un gato natural 
        de Cornellà de Llobregat, ha perdido toda la autoestima porque en diez años de relación 
        no ha conseguido provocar un ronroneo a su dueña ni una sola vez. El felino lo ha probado 
@@ -129,7 +130,7 @@ async function main() {
        2),
 
       ('Un gato observa con indiferencia la destrucción personal de su dueño',
-       
+      'SI MUERE, SE LO COMERÁ',
       'Un gato doméstico lleva dos meses asistiendo al proceso de derrumbe emocional 
       y económico de su dueño, un empresario alicantino de mediana edad en plena crisis 
       con quien ha compartido la totalidad de su vida y que, objetivamente, se lo ha dado todo.
@@ -139,13 +140,16 @@ async function main() {
        2),
 
       ('Un escritor olvida un signo de exclamación de cierre y obliga a leer toda su novela gritando',
-      
+      'VARIOS LECTORES SE HAN QUEDADO AFÓNICOS Y HAN SUFRIDO ATAQUES DE ANSIEDAD',
        'Alfonso Guzmán Ramírez, autor de la novela «Espiral de otoño», cometió un error que ha llenado 
        esta semana las librerías de clientes descontentos exigiendo soluciones. Guzmán abrió una frase 
        del primer capítulo con una exclamación que luego olvidó cerrar, forzando a sus lectores a leer
         más de 340 páginas gritando.',
         3),
       ('Estas son las mejores empresas tecnológicas para trabajar en España',
+      'Como expertos en el sector tecnológico, en teknopleo.com -el portal 
+      de empleo líder en Informática, Telecomunicaciones y Tecnología- ha seleccionado 
+      las mejores empresas para trabajar en España. Son estas:',
       
        'La segunda página de Google
         La segunda página de las búsquedas de Google es siempre un lugar tranquilo al que nunca va nadie.

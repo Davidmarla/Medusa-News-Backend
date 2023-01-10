@@ -17,6 +17,7 @@ const {
   voteNews,
   updateNew,
   getNewsByKeyword,
+  insertSubjectNew,
 } = require('../db/news');
 
 const getNewsController = async (req, res, next) => {
@@ -34,11 +35,12 @@ const getNewsController = async (req, res, next) => {
 
 const createNewController = async (req, res, next) => {
   try {
-    const { title, subject1, subject2, subject3, body } = req.body;
+    const { title, introduction, subject, subject2, subject3, body } = req.body;
     const userId = req.userId;
     const schema = joi.object().keys({
       title: joi.string().max(150).required(),
-      subject1: joi.string().max(25).required(),
+      introduction: joi.string().max(300).required(),
+      subject: joi.string().max(25).required(),
       subject2: joi.string().max(25),
       subject3: joi.string().max(25),
       body: joi.string().required(),
@@ -46,18 +48,27 @@ const createNewController = async (req, res, next) => {
 
     const validation = await schema.validateAsync({
       title,
-      subject1,
+      introduction,
+      subject,
       subject2,
       subject3,
       body,
     });
-
     if (validation.error) {
       res.status(500).send(validation.error);
     }
-    await createSubjectIfNotExsists(subject1);
-    await createSubjectIfNotExsists(subject2);
-    await createSubjectIfNotExsists(subject3);
+
+    await createSubjectIfNotExsists(subject);
+    // console.log(subject, subject2, subject3);
+    if (subject2 !== undefined) {
+      console.log('holas');
+      await createSubjectIfNotExsists(subject2);
+    }
+    if (subject3 !== undefined) {
+      await createSubjectIfNotExsists(subject3);
+    }
+
+    await insertSubjectNew(subject, subject2, subject3);
 
     let imageFileName;
 
@@ -74,13 +85,12 @@ const createNewController = async (req, res, next) => {
 
     const id = await createNew(
       title,
-      subject1,
-      subject2,
-      subject3,
+      introduction,
       imageFileName,
       body,
       userId
     );
+
     res.send({
       status: 'ok',
       message: `Noticia creada correctamente con id: ${id}`,

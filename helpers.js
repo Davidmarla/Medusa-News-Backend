@@ -38,6 +38,7 @@ async function processAndSaveImage(uploadedImage) {
 
 const createSubjectIfNotExsists = async (subject) => {
   let connection;
+
   try {
     connection = await getConnection();
 
@@ -51,8 +52,8 @@ const createSubjectIfNotExsists = async (subject) => {
     if (result.length === 0) {
       await connection.query(
         `
-        INSERT INTO subjects (subject) VALUES (?)
-      `,
+      INSERT INTO subjects (subject) VALUES (?)
+    `,
         [subject]
       );
     }
@@ -63,9 +64,55 @@ const createSubjectIfNotExsists = async (subject) => {
   }
 };
 
+const getSubjectId = async (subject) => {
+  let connection;
+  console.log('getSubId', subject);
+  try {
+    connection = await getConnection();
+
+    const id = await connection.query(
+      `
+    SELECT 
+      id
+    FROM
+      News_Server.subjects WHERE subject = ?
+  `,
+      [subject]
+    );
+    // console.log('GETSUBID', id);
+    return id[0][0].id;
+  } catch (error) {
+    console.log(error);
+  } finally {
+    if (connection) connection.release();
+  }
+};
+const getLastNewCreatedId = async () => {
+  let connection;
+  try {
+    connection = await getConnection();
+
+    const id = await connection.query(
+      `
+      SELECT 
+      id
+    FROM
+      News_Server.news order by id DESC
+  `
+    );
+
+    return id[0][0].id;
+  } catch (error) {
+    console.log(error);
+  } finally {
+    if (connection) connection.release();
+  }
+};
 module.exports = {
   generateError,
   createPathIfNotExists,
   processAndSaveImage,
   createSubjectIfNotExsists,
+  getSubjectId,
+  getLastNewCreatedId,
 };
