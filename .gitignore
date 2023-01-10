@@ -1,5 +1,5 @@
 .eslintrc.json
 .prettierrc.json
-node_modules
+./node_modules
 image.jpg
 ./uploads/profileImages

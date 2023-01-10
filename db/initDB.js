@@ -8,8 +8,6 @@ async function main() {
   try {
     connection = await getConnection();
 
-    console.log('Creando base de datos y conectando...');
-
     await connection.query('USE News_Server;');
 
     console.log('Borrando tablas existentes...');
