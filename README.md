@@ -1,6 +1,6 @@
 # Proyecto Noticias Colaborativas (HACK A BOSS JSB12RT)
 
-Segundo proyecto del _Bootcmap Fullstack Developer_ para crear una **API** de noticias colaborativas tipo _Reddit_ o _Menéame_ correspondiente a la parte de _Backend_.
+Segundo proyecto del _Bootcamp Full Stack Developer_ para crear una **API** de noticias colaborativas tipo _Reddit_ o _Menéame_ correspondiente a la parte de _Backend_.
 
 Esta **API** permite varias funcionalidades como son el registro de usuarios, login, listado de noticias... Que se expondrán con más detalle en su apartado correspondiente.
 
@@ -10,13 +10,13 @@ Sigue estos pasos para poder usar esta **API** en tu máquina local a efectos de
 
 ### Pre-requisitos
 
-_Importante_ ❗
+❗ _Importante_ ❗
 
-Para que la _API_ funcione correctamente y antes de ejecutarse el iniciador de la _base de datos_ (en adelante _BD_), debe existir _préviamente_ una _BD_ local llamada **News_Server**.
+Para que la **API** funcione correctamente y antes de ejecutarse el iniciador de la _base de datos_ (en adelante _BD_), debe existir _préviamente_ una _BD_ local llamada **News_Server**.
 
-### Instalación
+### Instalación 🔧
 
-Una vez clonado el repositorio en local se debe ejecutar el comando de la terminal
+Una vez clonado el repositorio en local y creada la _BD_ se debe ejecutar el comando de la terminal:
 
 ```
 npm i
@@ -31,11 +31,3 @@ node db/initDB.js
 ```
 
 Por supuesto, eres libre de testear todos los _endpoints_ de este proyecto por tu cuenta (crear tu propio usuario y noticias, por ejemplo) 😉
-
-Una vez clonado el repositorio en local se debe ejecutar el comando de la terminal
-
-```
-npm i
-```
-
-en la misma ruta donde se encuentra el archivo _server.js_ para instalar todas las dependencias necesarias para el funcionamineto de la **API** ya incluídas en el archivo _package.json_.
