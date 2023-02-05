@@ -31,10 +31,16 @@ npm i
 
 en la misma ruta donde se encuentra el archivo _server.js_ para instalar todas las dependencias necesarias para el funcionamineto de la **API** ya incluídas en el archivo _package.json_.
 
-A continuación, hay que iniciar la _BD_ para crear las tablas correspondientes dentro de dicha _BD_ y que también incluyen usuarios y noticias préviamente creados para permitir hacer pruebas directamente sin necesidad de crearlos nuevos. Usa el comando siguiente de la terminal y en la misma ruta donde se encuentre el archivo _server.js_ para crear los elementos de la _BD_.
+A continuación, hay que iniciar la _BD_ para crear las tablas correspondientes. Usa el comando siguiente de la terminal y en la misma ruta donde se encuentre el archivo _server.js_ para crear los elementos de la _BD_.
 
 ```
 node db/initDB.js
+```
+
+Si se quiere que se rellenen datos en la _BD_ a modo de ejemplos listos para hacer consultas, usa el comando "--fill" de la siguiente manera:
+
+```
+node db/initDB.js --fill
 ```
 
 Por supuesto, eres libre de testear todos los _endpoints_ de este proyecto por tu cuenta (crear tu propio usuario y noticias, por ejemplo) 😉
