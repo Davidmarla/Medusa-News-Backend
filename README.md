@@ -37,7 +37,7 @@ A continuación, hay que iniciar la _BD_ para crear las tablas correspondientes.
 node db/initDB.js
 ```
 
-Si se quiere que se rellenen datos en la _BD_ a modo de ejemplos listos para hacer consultas, usa el comando "--fill" de la siguiente manera:
+Si se quiere que se rellenen datos en la _BD_ a modo de ejemplos listos para hacer consultas, usa el parámetro "--fill" de la siguiente manera:
 
 ```
 node db/initDB.js --fill
