@@ -1,6 +1,7 @@
 require('dotenv').config();
 const { getConnection } = require('./db');
 const bcrypt = require('bcrypt');
+const { MYSQL_DATABASE } = process.env;
 
 async function main() {
   let connection;
@@ -8,7 +9,7 @@ async function main() {
   try {
     connection = await getConnection();
 
-    await connection.query('USE News_Server;');
+    await connection.query(`USE ${MYSQL_DATABASE};`);
 
     console.log('Borrando tablas existentes...');
 
@@ -73,11 +74,12 @@ async function main() {
       FOREIGN KEY (news_id) REFERENCES news(id)
     )`);
 
-    const password = 'root1234';
-    const passwordHash = await bcrypt.hash(password, 8);
-    console.log('Generando usuarios');
-    await connection.query(
-      `
+    if (process.argv.includes('--fill')) {
+      const password = 'root1234';
+      const passwordHash = await bcrypt.hash(password, 8);
+      console.log('Generando usuarios');
+      await connection.query(
+        `
     INSERT INTO users 
     (user_name, email, password) 
     VALUES
@@ -89,19 +91,19 @@ async function main() {
     ('Eva', 'eva@gmail.com', ?),
     ('Alex', 'alex@gmail.com', ?)
     `,
-      [
-        passwordHash,
-        passwordHash,
-        passwordHash,
-        passwordHash,
-        passwordHash,
-        passwordHash,
-        passwordHash,
-      ]
-    );
-    console.log('Generando noticias');
-    await connection.query(
-      `
+        [
+          passwordHash,
+          passwordHash,
+          passwordHash,
+          passwordHash,
+          passwordHash,
+          passwordHash,
+          passwordHash,
+        ]
+      );
+      console.log('Generando noticias');
+      await connection.query(
+        `
       INSERT INTO news(title,introduction, body,user_id )
       VALUES
        ('Un gato asume que morirá de hambre al ver su bol de comida medio vacío',
@@ -112,7 +114,7 @@ async function main() {
        se ha preparado para morir.', 
       1),
 
-      ('Un gato pierde la autoestima porque en diez años de relación no ha conseguido
+      ('Un gato pierde la autoestiCURRENTa porque en diez años de relación no ha conseguido
       provocar un ronroneo a su dueña ni una sola vez',
       'LOS VETERINARIOS RECOMIENDAN FINGIR EL RONRONEO POR EL BIEN DEL ANIMAL',
       'Sintiéndose culpable porque él sí ha ronroneado muchas veces, Chispi, un gato natural 
@@ -162,10 +164,10 @@ async function main() {
         Tintín, usas Tinder y te dedicas al desarrollo y mantenimiento de aplicaciones, llámales.',
         3)
       `
-    );
-    console.log('Generando votaciones');
-    await connection.query(
-      `
+      );
+      console.log('Generando votaciones');
+      await connection.query(
+        `
       INSERT INTO votes_news(up_vote, down_vote, news_id, user_id)
       VALUES
       (1, 0, 1, 1),
@@ -209,19 +211,19 @@ async function main() {
       (0, 1, 5, 7);
 
       `
-    );
-    console.log('Creando temas');
-    await connection.query(
-      `
+      );
+      console.log('Creando temas');
+      await connection.query(
+        `
       INSERT INTO subjects (subject) 
       VALUES 
       ('technology'),
       ('cats'),
       ('culture')
     `
-    );
-    await connection.query(
-      `
+      );
+      await connection.query(
+        `
       INSERT INTO subjects_news (news_id, subject_id) VALUES 
       (1,2),
       (2,2),
@@ -229,7 +231,8 @@ async function main() {
       (4,3),
       (5,1)
     `
-    );
+      );
+    }
   } catch (error) {
     console.error(error);
   } finally {
