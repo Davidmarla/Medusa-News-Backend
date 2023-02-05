@@ -114,7 +114,7 @@ async function main() {
        se ha preparado para morir.', 
       1),
 
-      ('Un gato pierde la autoestiCURRENTa porque en diez años de relación no ha conseguido
+      ('Un gato pierde la autoestima porque en diez años de relación no ha conseguido
       provocar un ronroneo a su dueña ni una sola vez',
       'LOS VETERINARIOS RECOMIENDAN FINGIR EL RONRONEO POR EL BIEN DEL ANIMAL',
       'Sintiéndose culpable porque él sí ha ronroneado muchas veces, Chispi, un gato natural 
