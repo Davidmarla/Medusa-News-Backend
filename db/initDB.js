@@ -31,7 +31,8 @@ async function main() {
         role VARCHAR(25) DEFAULT "user",
         bio VARCHAR(500),
         profile_image VARCHAR(100),
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        last_updated DATETIME null
       );
     `);
 
