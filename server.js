@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const { authUser } = require('./middlewares/auth');
 const fileUpload = require('express-fileupload');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const port = 8888;
 const {
   getNewsController,
@@ -22,6 +23,7 @@ const {
   updateUserProfile,
 } = require('./controllers/users');
 
+app.use(cors());
 app.use(morgan('dev'));
 
 app.use(bodyParser.urlencoded({ extended: false }));
