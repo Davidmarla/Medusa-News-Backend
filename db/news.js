@@ -2,6 +2,8 @@ const {
   generateError,
   getSubjectId,
   getLastNewCreatedId,
+  createSubjectIfNotExsists,
+  getCurrentIds,
 } = require('../helpers');
 const { getConnection } = require('./db');
 
@@ -138,40 +140,28 @@ const createNew = async (
 
 const insertSubjectNew = async (subject, subject2, subject3) => {
   let connection;
+
   try {
+    const subjects = [subject, subject2 ?? 'none', subject3 ?? 'none'];
     connection = await getConnection();
-
     const newId = await getLastNewCreatedId();
-    console.log('Insert', subject);
-    const subjectId = await getSubjectId(subject);
 
-    await connection.query(
-      `
-          INSERT INTO subjects_news (news_id, subject_id) 
-          VAlUES (?, ?)
-          `,
-      [newId, subjectId]
-    );
-    if (subject2 !== undefined) {
-      const subjectId2 = await getSubjectId(subject2);
+    const inserSub = async (subject = 'none') => {
+      console.log('Insert', subject);
+      console.log(newId);
+      await createSubjectIfNotExsists(subject);
+      const subjectId = await getSubjectId(subject);
       await connection.query(
         `
             INSERT INTO subjects_news (news_id, subject_id) 
             VAlUES (?, ?)
             `,
-        [newId, subjectId2]
+        [newId, subjectId]
       );
-    }
-    if (subject3 !== undefined) {
-      const subjectId3 = await getSubjectId(subject3);
-      await connection.query(
-        `
-            INSERT INTO subjects_news (news_id, subject_id) 
-            VAlUES (?, ?)
-            `,
-        [newId, subjectId3]
-      );
-    }
+    };
+    subjects.map((subject) => {
+      inserSub(subject);
+    });
   } catch (error) {
     throw generateError('Error en la base de datos', 500);
   }
@@ -210,45 +200,36 @@ const updateNew = async (
     const newId = currentNew.id;
 
     if (subject !== undefined) {
-      const currentSubjectId = await getSubjectId(currentNew.subject);
-      const subjectId = await getSubjectId(subject);
+      const currentSubjects = [subject, subject2, subject3];
+      const currentSubject = await getCurrentIds(newId);
 
-      await connection.query(
-        `
-        UPDATE subjects_news SET  subject_id=? WHERE subject_id=? and news_id=?  
-        
-        `,
-        [subjectId, currentSubjectId, newId]
-      );
+      const updateSub = async (subject = 'none', currentSubjectId = 'none') => {
+        //paso el tema NUEVO por si no tiene id crearselo
+        await createSubjectIfNotExsists(subject);
+        //regojo el ID del tema NUEVO
+        const subjectId = await getSubjectId(subject);
+        console.log(
+          'currentSubjectId:',
+          currentSubjectId,
+          'subjectId:',
+          subjectId
+        );
+
+        await connection.query(
+          `
+          UPDATE subjects_news SET  subject_id=? WHERE subject_id=? and news_id=?  
+          
+          `,
+          [subjectId, currentSubjectId, newId]
+        );
+      };
+      console.log(currentSubjects);
+      currentSubjects.map((subject, i) => {
+        const currentSubjectId = currentSubject[i].subject_id ?? 'none';
+        console.log('dentro de map [i]:', i, currentSubjectId);
+        updateSub(subject, currentSubjectId);
+      });
     }
-
-    //En un futuro se podran edita todos los temas.
-    /* if (subject2 !== undefined) {
-      const currentSubjectId2 = await getSubjectId(currentNew.subject2);
-      const subjectId2 = await getSubjectId(subject);
-
-      console.log('pataca2', subjectId2, currentSubjectId2, newId);
-      await connection.query(
-        `
-        UPDATE subjects_news SET  subject_id=? WHERE subject_id=? and news_id=?  
-        
-        `,
-        [subjectId2, currentSubjectId2, newId]
-      );
-    }
-    if (subject3 !== undefined) {
-      const currentSubjectId3 = await getSubjectId(currentNew.subject3);
-      const subjectId3 = await getSubjectId(subject);
-      console.log('pataca3', subjectId3, currentSubjectId3, newId);
-
-      await connection.query(
-        `
-        UPDATE subjects_news SET  subject_id=? WHERE subject_id=? and news_id=?  
-        
-        `,
-        [subjectId3, currentSubjectId3, newId]
-      );
-    } */
   } catch (err) {
     console.log(err);
     throw generateError('Error en la base de datos', 500);
