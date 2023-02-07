@@ -79,7 +79,7 @@ const getSubjectId = async (subject) => {
   `,
       [subject]
     );
-    // console.log('GETSUBID', id);
+
     return id[0][0].id;
   } catch (error) {
     console.log(error);
@@ -87,6 +87,30 @@ const getSubjectId = async (subject) => {
     if (connection) connection.release();
   }
 };
+const getCurrentIds = async (newId) => {
+  let connection;
+
+  try {
+    connection = await getConnection();
+
+    const ids = await connection.query(
+      `
+    SELECT 
+    subject_id 
+    FROM News_Server.subjects_news 
+    where news_id=?
+  `,
+      [newId]
+    );
+
+    return ids[0];
+  } catch (error) {
+    console.log(error);
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
 const getLastNewCreatedId = async () => {
   let connection;
   try {
@@ -115,4 +139,5 @@ module.exports = {
   createSubjectIfNotExsists,
   getSubjectId,
   getLastNewCreatedId,
+  getCurrentIds,
 };

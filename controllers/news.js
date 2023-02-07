@@ -173,6 +173,8 @@ const updateNewController = async (req, res, next) => {
     const validation = await schema.validateAsync({
       title,
       subject,
+      subject2,
+      subject3,
       body,
     });
 
