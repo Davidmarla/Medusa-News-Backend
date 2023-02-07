@@ -99,6 +99,12 @@ const loginController = async (req, res, next) => {
     res.send({
       status: 'ok',
       data: token,
+      email: email,
+      userName: user.user_name,
+      name: user.name,
+      bio: user.bio,
+      avatar: user.profile_image,
+      createdAt: user.created_at,
     });
   } catch (error) {
     next(error);
@@ -118,7 +124,7 @@ const updateUserProfile = async (req, res, next) => {
 
     const [currentUser] = await connection.query(
       `
-      SELECT id, name, bio, profile_image
+      SELECT id, name, bio, profile_image, password
       FROM users
       WHERE id = ?;
       `,
@@ -164,7 +170,10 @@ const updateUserProfile = async (req, res, next) => {
         .min(25)
         .max(500)
         .error(
-          generateError('Biografía mín. 25 caracteres, máx. 50 caracteres', 400)
+          generateError(
+            'Biografía mín. 25 caracteres, máx. 500 caracteres',
+            400
+          )
         ),
       updatedPassword1: joi
         .string()
@@ -187,14 +196,20 @@ const updateUserProfile = async (req, res, next) => {
       throw generateError('Las contraseñas no coinciden');
     }
 
-    const passwordHash = await bcrypt.hash(updatedPassword1, 8);
+    let passwordHash;
 
-    console.log(updatedName, updatedBio, passwordHash, updatedProfileImage, id);
+    if (updatedPassword1) {
+      passwordHash = await bcrypt.hash(updatedPassword1, 8);
+    } else {
+      passwordHash = currentUser[0].password;
+    }
+
+    //console.log(updatedName, updatedBio, passwordHash, updatedProfileImage, id);
 
     try {
       await connection.query(
         `UPDATE users 
-      SET name = ?, bio = ?, password = ?, profile_image = ?
+      SET name = ?, bio = ?, password = ?, profile_image = ?, last_updated = CURRENT_TIMESTAMP
       WHERE id = ?
       `,
         [updatedName, updatedBio, passwordHash, updatedProfileImage, id]
