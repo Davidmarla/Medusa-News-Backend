@@ -39,8 +39,13 @@ async function main() {
     CREATE TABLE news (
       id INTEGER PRIMARY KEY AUTO_INCREMENT,
       title VARCHAR(150) NOT NULL,
+<<<<<<< HEAD
       introduction VARCHAR(500),
       image VARCHAR(100),
+=======
+      image VARCHAR(100),
+      subject VARCHAR(25) NOT NULL,
+>>>>>>> 08f3e29 (Cambios en tablas BD y marcadas rutas TODO)
       body TEXT NOT NULL,
       create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       user_id INT NOT NULL,
