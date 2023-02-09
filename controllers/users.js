@@ -3,7 +3,7 @@ const joi = require('joi');
 const jwt = require('jsonwebtoken');
 
 const { generateError, processAndSaveImage } = require('../helpers');
-const { createUser, getUserByEmail } = require('../db/users');
+const { createUser, getUserByEmail, getUserById } = require('../db/users');
 const { getConnection } = require('../db/db');
 
 const newUserController = async (req, res, next) => {
@@ -99,12 +99,7 @@ const loginController = async (req, res, next) => {
     res.send({
       status: 'ok',
       data: token,
-      email: email,
       userName: user.user_name,
-      name: user.name,
-      bio: user.bio,
-      avatar: user.profile_image,
-      createdAt: user.created_at,
     });
   } catch (error) {
     next(error);
@@ -230,8 +225,46 @@ const updateUserProfile = async (req, res, next) => {
   }
 };
 
+const getUserController = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const user = await getUserById(id);
+
+    res.send({
+      status: 'ok',
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getMeController = async (req, res, next) => {
+  try {
+    const user = await getUserById(req.userId, false);
+
+    res.send({
+      status: 'ok',
+      data: {
+        id: user.id,
+        user_name: user.user_name,
+        name: user.name,
+        email: user.email,
+        bio: user.bio,
+        avatar: user.profile_image,
+        createdAt: user.created_at,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   newUserController,
   loginController,
   updateUserProfile,
+  getUserController,
+  getMeController,
 };

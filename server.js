@@ -21,6 +21,8 @@ const {
   newUserController,
   loginController,
   updateUserProfile,
+  getUserController,
+  getMeController,
 } = require('./controllers/users');
 
 app.use(cors());
@@ -33,9 +35,11 @@ app.use(fileUpload());
 app.use('./images', express.static('./images'));
 
 //Endpoints de usuario
-app.post('/user', newUserController);
+app.post('/register', newUserController);
 app.post('/login', loginController);
-app.put('/profile/:id', authUser, updateUserProfile);
+app.get('/user/:id', getUserController);
+app.get('/user', authUser, getMeController);
+app.put('/profile/:id', authUser, updateUserProfile); // REVISAR ENDPOINT TODO:
 
 //Endpoints de noticias
 app.get('/', getNewsController);
