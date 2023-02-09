@@ -35,7 +35,6 @@ app.use('./images', express.static('./images'));
 //Endpoints de usuario
 app.post('/user', newUserController);
 app.post('/login', loginController);
-<<<<<<< HEAD
 app.put('/profile/:id', authUser, updateUserProfile);
 
 //Endpoints de noticias
@@ -46,9 +45,6 @@ app.delete('/new/:id', authUser, deleteNewController);
 app.put('/new/:id', authUser, updateNewController);
 app.get('/search', searchNewController);
 app.put('/:id/:type', authUser, voteNewController);
-=======
-/* TODO: app.put('/profile/:id', authUser, updateUserProfile); */
->>>>>>> 08f3e29 (Cambios en tablas BD y marcadas rutas TODO)
 
 //Middleware que gestiona rutas no definidas
 app.use((req, res) => {
