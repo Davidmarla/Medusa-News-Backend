@@ -17,18 +17,28 @@ const getNewById = async (id) => {
       SELECT 
       news.id,
       news.title,
-      news.image, 
+      news.image,
+      news.introduction,
       news.body, 
       news.create_date, 
       news.user_id,
       upVote,
-      downVote
-      
-      from news 
-      left join 
-      (SELECT  news_id,  SUM(up_vote) as upVote , SUM(down_vote) as downVote
-      FROM votes_news group by news_id ) s
-      on (news.id = news_id) where news.id = ?
+      downVote, 
+      subjects.subject
+    FROM 
+      news
+    inner join subjects_news
+    on subjects_news.id = news.id 
+    inner join subjects
+    on subjects_news.subject_id = subjects.id
+    left join 
+    (SELECT  
+    news_id,
+      SUM(up_vote) as upVote,
+      SUM(down_vote) as downVote
+    FROM votes_news group by news_id ) s
+    on news.id = s.news_id 
+    where news.id = ?
     `,
       [id]
     );
@@ -82,6 +92,7 @@ const getNews = async () => {
     news.id,
     news.title,
     news.image,
+    news.introduction,
     news.body, 
     news.create_date, 
     news.user_id,
@@ -180,6 +191,8 @@ const updateNew = async (
   let connection;
 
   try {
+    console.log('[UPTADEENEW] =>', imageFileName);
+
     connection = await getConnection();
 
     const currentNew = await getNewById(id);
@@ -200,7 +213,7 @@ const updateNew = async (
     const newId = currentNew.id;
 
     if (subject !== undefined) {
-      const currentSubjects = [subject, subject2, subject3];
+      const currentSubjects = [subject, subject2 ?? 'none', subject3 ?? 'none'];
       const currentSubject = await getCurrentIds(newId);
 
       const updateSub = async (subject = 'none', currentSubjectId = 'none') => {
@@ -225,8 +238,8 @@ const updateNew = async (
       };
       console.log(currentSubjects);
       currentSubjects.map((subject, i) => {
-        const currentSubjectId = currentSubject[i].subject_id ?? 'none';
-        console.log('dentro de map [i]:', i, currentSubjectId);
+        const currentSubjectId = currentSubject[i].subject_id ?? 1;
+        console.log('dentro de map [i]:', i, currentSubject[i].subject_id);
         updateSub(subject, currentSubjectId);
       });
     }
