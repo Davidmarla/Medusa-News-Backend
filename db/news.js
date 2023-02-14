@@ -152,15 +152,13 @@ const createNew = async (
   }
 };
 
-const insertSubjectNew = async (subject, subject2, subject3) => {
+const insertSubjectNew = async (subject) => {
   let connection;
-
   try {
-    const subjects = [subject, subject2 ?? 'none', subject3 ?? 'none'];
     connection = await getConnection();
     const newId = await getLastNewCreatedId();
 
-    const inserSub = async (subject = 'none') => {
+    const inserSub = async (subject) => {
       console.log('Insert', subject);
       console.log(newId);
       await createSubjectIfNotExsists(subject);
@@ -173,9 +171,8 @@ const insertSubjectNew = async (subject, subject2, subject3) => {
         [newId, subjectId]
       );
     };
-    subjects.map((subject) => {
-      inserSub(subject);
-    });
+
+    inserSub(subject);
   } catch (error) {
     throw generateError('Error en la base de datos', 500);
   }

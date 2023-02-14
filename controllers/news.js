@@ -18,7 +18,6 @@ const {
   updateNew,
   getNewsByKeyword,
   insertSubjectNew,
-  getSubjectById,
 } = require('../db/news');
 
 const getNewsController = async (req, res, next) => {
@@ -36,14 +35,12 @@ const getNewsController = async (req, res, next) => {
 
 const createNewController = async (req, res, next) => {
   try {
-    const { title, introduction, subject, subject2, subject3, body } = req.body;
+    const { title, introduction, subject, body } = req.body;
     const userId = req.userId;
     const schema = joi.object().keys({
       title: joi.string().max(150).required(),
       introduction: joi.string().max(300).required(),
       subject: joi.string().max(25).required(),
-      subject2: joi.string().max(25),
-      subject3: joi.string().max(25),
       body: joi.string().required(),
     });
 
@@ -51,25 +48,14 @@ const createNewController = async (req, res, next) => {
       title,
       introduction,
       subject,
-      subject2,
-      subject3,
       body,
     });
     if (validation.error) {
       res.status(500).send(validation.error);
     }
-
     await createSubjectIfNotExsists(subject);
-    // console.log(subject, subject2, subject3);
-    if (subject2 !== undefined) {
-      console.log('holas');
-      await createSubjectIfNotExsists(subject2);
-    }
-    if (subject3 !== undefined) {
-      await createSubjectIfNotExsists(subject3);
-    }
 
-    await insertSubjectNew(subject, subject2, subject3);
+    await insertSubjectNew(subject);
 
     let imageFileName;
 
@@ -105,11 +91,10 @@ const getSingleNewController = async (req, res, next) => {
   try {
     const { id } = req.params;
     const newItem = await getNewById(id);
-    const subjects = await getSubjectById(id);
+
     res.send({
       status: 'ok',
       data: newItem,
-      subjects,
     });
   } catch (error) {
     next(error);
