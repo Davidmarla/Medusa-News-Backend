@@ -98,7 +98,8 @@ const getNews = async () => {
     news.user_id,
     upVote,
     downVote, 
-    subjects.subject
+    subjects.subject,
+    users.user_name
   FROM 
     news
   inner join subjects_news
@@ -112,6 +113,8 @@ const getNews = async () => {
     SUM(down_vote) as downVote
   FROM votes_news group by news_id ) s
   on news.id = s.news_id 
+    inner join users
+  on news.user_id = users.id
   order by news.create_date DESC
     `);
 
@@ -358,6 +361,33 @@ const getNewsByKeyword = async (searchParam) => {
   }
 };
 
+const getSubjectById = async (id) => {
+  let connection;
+
+  try {
+    connection = await getConnection();
+    const subject = await connection.query(
+      `SELECT 
+   subjects.subject
+    FROM News_Server.news  
+   inner join subjects_news
+     on subjects_news.id = news.id 
+   inner join subjects
+     on subjects_news.subject_id = subjects.id 
+   where subjects_news.news_id = ?`,
+      [id]
+    );
+
+    if (subject[0].length === 0) {
+      throw generateError('Error en la base de datos', 500);
+    }
+
+    return subject[0];
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
 module.exports = {
   getNewById,
   getDeleteNewById,
@@ -367,4 +397,5 @@ module.exports = {
   updateNew,
   getNewsByKeyword,
   insertSubjectNew,
+  getSubjectById,
 };

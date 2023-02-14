@@ -32,7 +32,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 app.use(fileUpload());
-app.use('./images', express.static('./images'));
+app.use('/uploads', express.static('./uploads'));
 
 //Endpoints de usuario
 app.post('/register', newUserController);

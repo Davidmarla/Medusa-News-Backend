@@ -18,6 +18,7 @@ const {
   updateNew,
   getNewsByKeyword,
   insertSubjectNew,
+  getSubjectById,
 } = require('../db/news');
 
 const getNewsController = async (req, res, next) => {
@@ -104,9 +105,11 @@ const getSingleNewController = async (req, res, next) => {
   try {
     const { id } = req.params;
     const newItem = await getNewById(id);
+    const subjects = await getSubjectById(id);
     res.send({
       status: 'ok',
       data: newItem,
+      subjects,
     });
   } catch (error) {
     next(error);
