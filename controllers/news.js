@@ -18,6 +18,7 @@ const {
   updateNew,
   getNewsByKeyword,
   insertSubjectNew,
+  getNewsBySubject,
 } = require('../db/news');
 
 const getNewsController = async (req, res, next) => {
@@ -35,6 +36,7 @@ const getNewsController = async (req, res, next) => {
 
 const createNewController = async (req, res, next) => {
   try {
+    console.log(req);
     const { title, introduction, subject, body } = req.body;
     const userId = req.userId;
     const schema = joi.object().keys({
@@ -228,6 +230,21 @@ const voteNewController = async (req, res) => {
   }
 };
 
+const getNewsBySubjectController = async (req, res, next) => {
+  try {
+    const subject = req.params.subject;
+    console.log('[getNewsBySubjectController]: ', subject);
+    const news = await getNewsBySubject(subject);
+
+    res.send({
+      status: 'ok',
+      data: news,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getNewsController,
   createNewController,
@@ -236,4 +253,5 @@ module.exports = {
   updateNewController,
   searchNewController,
   voteNewController,
+  getNewsBySubjectController,
 };
