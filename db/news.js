@@ -385,6 +385,48 @@ const getSubjectById = async (id) => {
   }
 };
 
+const getNewsBySubject = async (subject) => {
+  let connection;
+  try {
+    connection = await getConnection();
+    const news = await connection.query(
+      ` 
+    SELECT 
+    news.id,
+    news.title,
+    news.image,
+    news.introduction,
+    news.body, 
+    news.create_date, 
+    news.user_id,
+    upVote,
+    downVote, 
+    subjects.subject
+  FROM 
+    news
+  inner join subjects_news
+  on subjects_news.id = news.id 
+  inner join subjects
+  on subjects_news.subject_id = subjects.id
+  left join 
+  (SELECT  
+  news_id,
+    SUM(up_vote) as upVote,
+    SUM(down_vote) as downVote
+  FROM votes_news group by news_id ) s
+  on news.id = s.news_id 
+  where subjects.subject = ?
+  order by news.create_date DESC
+    `,
+      [subject]
+    );
+
+    return news[0];
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
 module.exports = {
   getNewById,
   getDeleteNewById,
@@ -395,4 +437,5 @@ module.exports = {
   getNewsByKeyword,
   insertSubjectNew,
   getSubjectById,
+  getNewsBySubject,
 };
