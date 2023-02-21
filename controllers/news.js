@@ -19,6 +19,8 @@ const {
   getNewsByKeyword,
   insertSubjectNew,
   getNewsBySubject,
+  getUsersVotes,
+  getNewByUser,
 } = require('../db/news');
 
 const getNewsController = async (req, res, next) => {
@@ -233,8 +235,45 @@ const voteNewController = async (req, res) => {
 const getNewsBySubjectController = async (req, res, next) => {
   try {
     const subject = req.params.subject;
-    console.log('[getNewsBySubjectController]: ', subject);
     const news = await getNewsBySubject(subject);
+
+    res.send({
+      status: 'ok',
+      data: news,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getUsersVotesController = async (req, res, next) => {
+  try {
+    const newId = req.params.id;
+    const userId = req.params.userId;
+    const votes = await getUsersVotes(newId, userId);
+    console.log('[getUsersVotesController]: ', votes);
+    if (votes.length) {
+      res.send({
+        status: 'ok',
+        data: votes,
+        vote: true,
+      });
+    } else {
+      res.send({
+        status: 'ok',
+        data: votes,
+        vote: false,
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getNewsByUserController = async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+    const news = await getNewByUser(userId);
 
     res.send({
       status: 'ok',
@@ -254,4 +293,6 @@ module.exports = {
   searchNewController,
   voteNewController,
   getNewsBySubjectController,
+  getUsersVotesController,
+  getNewsByUserController,
 };
