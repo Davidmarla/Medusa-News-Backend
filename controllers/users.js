@@ -42,7 +42,6 @@ const newUserController = async (req, res, next) => {
     }
 
     const id = await createUser(user_name, email, password);
-    console.log(id);
 
     res.send({
       status: 'ok',
@@ -114,8 +113,6 @@ const updateUserProfile = async (req, res, next) => {
 
     const { id } = req.params;
     const { name, bio, password1, password2 } = req.body;
-
-    console.log(Number(id), req.userId);
 
     const [currentUser] = await connection.query(
       `

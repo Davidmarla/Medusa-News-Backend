@@ -255,25 +255,25 @@ const voteNews = async (type, newId, userId) => {
   try {
     connection = await getConnection();
     //comprovar si hay voto
-    const [currentVote] = await connection.query(
+    /*   const [currentVote] = await connection.query(
       `
   SELECT id FROM votes_news WHERE news_id = ? and user_id = ?;
   `,
       [newId, userId]
-    );
+    ); */
 
     //si es up
     if (type === 'up') {
       //no hay voto
-      if (!currentVote.length) {
-        await connection.query(
-          `
+
+      await connection.query(
+        `
         INSERT INTO votes_news(up_vote, down_vote, news_id, user_id) VALUES(1, 0, ?, ?);
         `,
-          [parseInt(newId), userId]
-        );
-      }
-      //si hay voto
+        [parseInt(newId), userId]
+      );
+    }
+    /* //si hay voto
       if (currentVote.length) {
         await connection.query(
           `
@@ -281,27 +281,26 @@ const voteNews = async (type, newId, userId) => {
           `,
           [currentVote[0].id]
         );
-      }
-    }
+      } */
+
     if (type === 'down') {
       //no hay voto
-      if (!currentVote.length) {
+      /* if (!currentVote.length) {
         await connection.query(
           `
         INSERT INTO votes_news(up_vote, down_vote, news_id, user_id) VALUES(0, 1, ?, ?);
         `,
           [parseInt(newId), userId]
         );
-      }
+      } */
       //si hay voto
-      if (currentVote.length) {
-        await connection.query(
-          `
-          UPDATE votes_news set up_vote = 0, down_vote = 1 WHERE id = ?;
+
+      await connection.query(
+        `
+          delete  FROM News_Server.votes_news where news_id = ? and user_id = ?;
           `,
-          [currentVote[0].id]
-        );
-      }
+        [parseInt(newId), userId]
+      );
     }
   } catch (err) {
     throw generateError('Error en la base de datos', 500);
@@ -427,6 +426,73 @@ const getNewsBySubject = async (subject) => {
   }
 };
 
+const getUsersVotes = async (newId, userId) => {
+  let connection;
+  try {
+    connection = await getConnection();
+    const votes = await connection.query(
+      ` 
+      SELECT 
+       user_id 
+       FROM 
+       News_Server.votes_news
+      where 
+        news_id = ?
+        and user_id = ?
+        ;
+ 
+    `,
+      [newId, userId]
+    );
+
+    return votes[0];
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
+const getNewByUser = async (userId) => {
+  let connection;
+  try {
+    connection = await getConnection();
+    const news = await connection.query(
+      ` 
+      SELECT 
+      news.id,
+      news.title,
+      news.image,
+      news.introduction,
+      news.body, 
+      news.create_date, 
+      news.user_id,
+      upVote,
+      downVote, 
+      subjects.subject
+    FROM 
+      news
+    inner join subjects_news
+    on subjects_news.id = news.id 
+    inner join subjects
+    on subjects_news.subject_id = subjects.id
+    left join 
+    (SELECT  
+    news_id,
+      SUM(up_vote) as upVote,
+      SUM(down_vote) as downVote
+    FROM votes_news group by news_id ) s
+    on news.id = s.news_id 
+    where news.user_id = ?
+ 
+    `,
+      [userId]
+    );
+
+    return news[0];
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
 module.exports = {
   getNewById,
   getDeleteNewById,
@@ -438,4 +504,6 @@ module.exports = {
   insertSubjectNew,
   getSubjectById,
   getNewsBySubject,
+  getUsersVotes,
+  getNewByUser,
 };

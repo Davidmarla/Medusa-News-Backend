@@ -15,6 +15,8 @@ const {
   voteNewController,
   searchNewController,
   getNewsBySubjectController,
+  getUsersVotesController,
+  getNewsByUserController,
 } = require('./controllers/news');
 const app = express();
 
@@ -47,10 +49,12 @@ app.get('/', getNewsController);
 app.post('/', authUser, createNewController);
 app.get('/new/:id', getSingleNewController);
 app.delete('/new/:id', authUser, deleteNewController);
+app.get('/newUser/:userId', getNewsByUserController);
 app.put('/new/:id', authUser, updateNewController);
 app.get('/search', searchNewController);
 app.put('/:id/:type', authUser, voteNewController);
 app.get('/:subject', getNewsBySubjectController);
+app.get('/infoVotes/:id/:userId', getUsersVotesController);
 
 //Middleware que gestiona rutas no definidas
 app.use((req, res) => {
