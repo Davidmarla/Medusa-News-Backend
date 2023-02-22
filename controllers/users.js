@@ -246,15 +246,7 @@ const getMeController = async (req, res, next) => {
 
     res.send({
       status: 'ok',
-      data: {
-        id: user.id,
-        user_name: user.user_name,
-        name: user.name,
-        email: user.email,
-        bio: user.bio,
-        avatar: user.profile_image,
-        createdAt: user.created_at,
-      },
+      data: user,
     });
   } catch (error) {
     next(error);
