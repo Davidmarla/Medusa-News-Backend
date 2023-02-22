@@ -18,6 +18,9 @@ const {
   updateNew,
   getNewsByKeyword,
   insertSubjectNew,
+  getNewsBySubject,
+  getUsersVotes,
+  getNewByUser,
 } = require('../db/news');
 
 const getNewsController = async (req, res, next) => {
@@ -35,14 +38,13 @@ const getNewsController = async (req, res, next) => {
 
 const createNewController = async (req, res, next) => {
   try {
-    const { title, introduction, subject, subject2, subject3, body } = req.body;
+    console.log(req);
+    const { title, introduction, subject, body } = req.body;
     const userId = req.userId;
     const schema = joi.object().keys({
       title: joi.string().max(150).required(),
       introduction: joi.string().max(300).required(),
       subject: joi.string().max(25).required(),
-      subject2: joi.string().max(25),
-      subject3: joi.string().max(25),
       body: joi.string().required(),
     });
 
@@ -50,25 +52,14 @@ const createNewController = async (req, res, next) => {
       title,
       introduction,
       subject,
-      subject2,
-      subject3,
       body,
     });
     if (validation.error) {
       res.status(500).send(validation.error);
     }
-
     await createSubjectIfNotExsists(subject);
-    // console.log(subject, subject2, subject3);
-    if (subject2 !== undefined) {
-      console.log('holas');
-      await createSubjectIfNotExsists(subject2);
-    }
-    if (subject3 !== undefined) {
-      await createSubjectIfNotExsists(subject3);
-    }
 
-    await insertSubjectNew(subject, subject2, subject3);
+    await insertSubjectNew(subject);
 
     let imageFileName;
 
@@ -104,6 +95,7 @@ const getSingleNewController = async (req, res, next) => {
   try {
     const { id } = req.params;
     const newItem = await getNewById(id);
+
     res.send({
       status: 'ok',
       data: newItem,
@@ -202,6 +194,7 @@ const updateNewController = async (req, res, next) => {
       imageFileName = `${nanoid(30)}.jpg`;
       await image.toFile(path.join(imagesDir, imageFileName));
     }
+    console.log('[UPTADEENEWController] =>', imageFileName);
 
     await updateNew(
       title,
@@ -239,6 +232,58 @@ const voteNewController = async (req, res) => {
   }
 };
 
+const getNewsBySubjectController = async (req, res, next) => {
+  try {
+    const subject = req.params.subject;
+    const news = await getNewsBySubject(subject);
+
+    res.send({
+      status: 'ok',
+      data: news,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getUsersVotesController = async (req, res, next) => {
+  try {
+    const newId = req.params.id;
+    const userId = req.params.userId;
+    const votes = await getUsersVotes(newId, userId);
+    console.log('[getUsersVotesController]: ', votes);
+    if (votes.length) {
+      res.send({
+        status: 'ok',
+        data: votes,
+        vote: true,
+      });
+    } else {
+      res.send({
+        status: 'ok',
+        data: votes,
+        vote: false,
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getNewsByUserController = async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+    const news = await getNewByUser(userId);
+
+    res.send({
+      status: 'ok',
+      data: news,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getNewsController,
   createNewController,
@@ -247,4 +292,7 @@ module.exports = {
   updateNewController,
   searchNewController,
   voteNewController,
+  getNewsBySubjectController,
+  getUsersVotesController,
+  getNewsByUserController,
 };

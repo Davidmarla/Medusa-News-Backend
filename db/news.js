@@ -17,18 +17,28 @@ const getNewById = async (id) => {
       SELECT 
       news.id,
       news.title,
-      news.image, 
+      news.image,
+      news.introduction,
       news.body, 
       news.create_date, 
       news.user_id,
       upVote,
-      downVote
-      
-      from news 
-      left join 
-      (SELECT  news_id,  SUM(up_vote) as upVote , SUM(down_vote) as downVote
-      FROM votes_news group by news_id ) s
-      on (news.id = news_id) where news.id = ?
+      downVote, 
+      subjects.subject
+    FROM 
+      news
+    inner join subjects_news
+    on subjects_news.id = news.id 
+    inner join subjects
+    on subjects_news.subject_id = subjects.id
+    left join 
+    (SELECT  
+    news_id,
+      SUM(up_vote) as upVote,
+      SUM(down_vote) as downVote
+    FROM votes_news group by news_id ) s
+    on news.id = s.news_id 
+    where news.id = ?
     `,
       [id]
     );
@@ -82,12 +92,14 @@ const getNews = async () => {
     news.id,
     news.title,
     news.image,
+    news.introduction,
     news.body, 
     news.create_date, 
     news.user_id,
     upVote,
     downVote, 
-    subjects.subject
+    subjects.subject,
+    users.user_name
   FROM 
     news
   inner join subjects_news
@@ -101,6 +113,8 @@ const getNews = async () => {
     SUM(down_vote) as downVote
   FROM votes_news group by news_id ) s
   on news.id = s.news_id 
+    inner join users
+  on news.user_id = users.id
   order by news.create_date DESC
     `);
 
@@ -138,15 +152,13 @@ const createNew = async (
   }
 };
 
-const insertSubjectNew = async (subject, subject2, subject3) => {
+const insertSubjectNew = async (subject) => {
   let connection;
-
   try {
-    const subjects = [subject, subject2 ?? 'none', subject3 ?? 'none'];
     connection = await getConnection();
     const newId = await getLastNewCreatedId();
 
-    const inserSub = async (subject = 'none') => {
+    const inserSub = async (subject) => {
       console.log('Insert', subject);
       console.log(newId);
       await createSubjectIfNotExsists(subject);
@@ -159,9 +171,8 @@ const insertSubjectNew = async (subject, subject2, subject3) => {
         [newId, subjectId]
       );
     };
-    subjects.map((subject) => {
-      inserSub(subject);
-    });
+
+    inserSub(subject);
   } catch (error) {
     throw generateError('Error en la base de datos', 500);
   }
@@ -180,6 +191,8 @@ const updateNew = async (
   let connection;
 
   try {
+    console.log('[UPTADEENEW] =>', imageFileName);
+
     connection = await getConnection();
 
     const currentNew = await getNewById(id);
@@ -200,7 +213,7 @@ const updateNew = async (
     const newId = currentNew.id;
 
     if (subject !== undefined) {
-      const currentSubjects = [subject, subject2, subject3];
+      const currentSubjects = [subject, subject2 ?? 'none', subject3 ?? 'none'];
       const currentSubject = await getCurrentIds(newId);
 
       const updateSub = async (subject = 'none', currentSubjectId = 'none') => {
@@ -225,8 +238,8 @@ const updateNew = async (
       };
       console.log(currentSubjects);
       currentSubjects.map((subject, i) => {
-        const currentSubjectId = currentSubject[i].subject_id ?? 'none';
-        console.log('dentro de map [i]:', i, currentSubjectId);
+        const currentSubjectId = currentSubject[i].subject_id ?? 1;
+        console.log('dentro de map [i]:', i, currentSubject[i].subject_id);
         updateSub(subject, currentSubjectId);
       });
     }
@@ -242,25 +255,25 @@ const voteNews = async (type, newId, userId) => {
   try {
     connection = await getConnection();
     //comprovar si hay voto
-    const [currentVote] = await connection.query(
+    /*   const [currentVote] = await connection.query(
       `
   SELECT id FROM votes_news WHERE news_id = ? and user_id = ?;
   `,
       [newId, userId]
-    );
+    ); */
 
     //si es up
     if (type === 'up') {
       //no hay voto
-      if (!currentVote.length) {
-        await connection.query(
-          `
+
+      await connection.query(
+        `
         INSERT INTO votes_news(up_vote, down_vote, news_id, user_id) VALUES(1, 0, ?, ?);
         `,
-          [parseInt(newId), userId]
-        );
-      }
-      //si hay voto
+        [parseInt(newId), userId]
+      );
+    }
+    /* //si hay voto
       if (currentVote.length) {
         await connection.query(
           `
@@ -268,27 +281,26 @@ const voteNews = async (type, newId, userId) => {
           `,
           [currentVote[0].id]
         );
-      }
-    }
+      } */
+
     if (type === 'down') {
       //no hay voto
-      if (!currentVote.length) {
+      /* if (!currentVote.length) {
         await connection.query(
           `
         INSERT INTO votes_news(up_vote, down_vote, news_id, user_id) VALUES(0, 1, ?, ?);
         `,
           [parseInt(newId), userId]
         );
-      }
+      } */
       //si hay voto
-      if (currentVote.length) {
-        await connection.query(
-          `
-          UPDATE votes_news set up_vote = 0, down_vote = 1 WHERE id = ?;
+
+      await connection.query(
+        `
+          delete  FROM News_Server.votes_news where news_id = ? and user_id = ?;
           `,
-          [currentVote[0].id]
-        );
-      }
+        [parseInt(newId), userId]
+      );
     }
   } catch (err) {
     throw generateError('Error en la base de datos', 500);
@@ -345,6 +357,142 @@ const getNewsByKeyword = async (searchParam) => {
   }
 };
 
+const getSubjectById = async (id) => {
+  let connection;
+
+  try {
+    connection = await getConnection();
+    const subject = await connection.query(
+      `SELECT 
+   subjects.subject
+    FROM News_Server.news  
+   inner join subjects_news
+     on subjects_news.id = news.id 
+   inner join subjects
+     on subjects_news.subject_id = subjects.id 
+   where subjects_news.news_id = ?`,
+      [id]
+    );
+
+    if (subject[0].length === 0) {
+      throw generateError('Error en la base de datos', 500);
+    }
+
+    return subject[0];
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
+const getNewsBySubject = async (subject) => {
+  let connection;
+  try {
+    connection = await getConnection();
+    const news = await connection.query(
+      ` 
+    SELECT 
+    news.id,
+    news.title,
+    news.image,
+    news.introduction,
+    news.body, 
+    news.create_date, 
+    news.user_id,
+    upVote,
+    downVote, 
+    subjects.subject
+  FROM 
+    news
+  inner join subjects_news
+  on subjects_news.id = news.id 
+  inner join subjects
+  on subjects_news.subject_id = subjects.id
+  left join 
+  (SELECT  
+  news_id,
+    SUM(up_vote) as upVote,
+    SUM(down_vote) as downVote
+  FROM votes_news group by news_id ) s
+  on news.id = s.news_id 
+  where subjects.subject = ?
+  order by news.create_date DESC
+    `,
+      [subject]
+    );
+
+    return news[0];
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
+const getUsersVotes = async (newId, userId) => {
+  let connection;
+  try {
+    connection = await getConnection();
+    const votes = await connection.query(
+      ` 
+      SELECT 
+       user_id 
+       FROM 
+       News_Server.votes_news
+      where 
+        news_id = ?
+        and user_id = ?
+        ;
+ 
+    `,
+      [newId, userId]
+    );
+
+    return votes[0];
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
+const getNewByUser = async (userId) => {
+  let connection;
+  try {
+    connection = await getConnection();
+    const news = await connection.query(
+      ` 
+      SELECT 
+      news.id,
+      news.title,
+      news.image,
+      news.introduction,
+      news.body, 
+      news.create_date, 
+      news.user_id,
+      upVote,
+      downVote, 
+      subjects.subject
+    FROM 
+      news
+    inner join subjects_news
+    on subjects_news.id = news.id 
+    inner join subjects
+    on subjects_news.subject_id = subjects.id
+    left join 
+    (SELECT  
+    news_id,
+      SUM(up_vote) as upVote,
+      SUM(down_vote) as downVote
+    FROM votes_news group by news_id ) s
+    on news.id = s.news_id 
+    where news.user_id = ?
+ 
+    `,
+      [userId]
+    );
+
+    return news[0];
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
 module.exports = {
   getNewById,
   getDeleteNewById,
@@ -354,4 +502,8 @@ module.exports = {
   updateNew,
   getNewsByKeyword,
   insertSubjectNew,
+  getSubjectById,
+  getNewsBySubject,
+  getUsersVotes,
+  getNewByUser,
 };
