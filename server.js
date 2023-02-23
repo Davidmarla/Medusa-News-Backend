@@ -53,7 +53,7 @@ app.get('/newUser/:userId', getNewsByUserController);
 app.put('/new/:id', authUser, updateNewController);
 app.get('/search', searchNewController);
 app.put('/:id/:type', authUser, voteNewController);
-app.get('/:subject', getNewsBySubjectController);
+app.get('/subject/:subject', getNewsBySubjectController);
 app.get('/infoVotes/:id/:userId', getUsersVotesController);
 
 //Middleware que gestiona rutas no definidas
