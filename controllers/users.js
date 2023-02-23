@@ -152,7 +152,7 @@ const updateUserProfile = async (req, res, next) => {
     const schema = joi.object().keys({
       updatedName: joi
         .string()
-        .min(10)
+        .min(3)
         .max(100)
         .error(
           generateError('Nombre mín. 10 caracteres, máx. 100 caracteres', 400)
