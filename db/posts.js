@@ -1,13 +1,13 @@
 const {
   generateError,
   getSubjectId,
-  getLastNewCreatedId,
+  getLastPostCreatedId,
   createSubjectIfNotExsists,
   getCurrentIds,
 } = require('../helpers');
 const { getConnection } = require('./db');
 
-const getNewById = async (id) => {
+const getPostById = async (id) => {
   let connection;
   try {
     connection = await getConnection();
@@ -53,7 +53,7 @@ const getNewById = async (id) => {
   }
 };
 
-const getDeleteNewById = async (id) => {
+const getDeletePostById = async (id) => {
   let connection;
   try {
     connection = await getConnection();
@@ -83,11 +83,11 @@ const getDeleteNewById = async (id) => {
   }
 };
 
-const getNews = async () => {
+const getPosts = async () => {
   let connection;
   try {
     connection = await getConnection();
-    const news = await connection.query(` 
+    const posts = await connection.query(` 
     SELECT 
     news.id,
     news.title,
@@ -118,13 +118,13 @@ const getNews = async () => {
   order by news.create_date DESC
     `);
 
-    return news[0];
+    return posts[0];
   } finally {
     if (connection) connection.release();
   }
 };
 
-const createNew = async (
+const createPost = async (
   title,
   introduction,
   imageFileName = '',
@@ -152,15 +152,15 @@ const createNew = async (
   }
 };
 
-const insertSubjectNew = async (subject) => {
+const insertSubjectPost = async (subject) => {
   let connection;
   try {
     connection = await getConnection();
-    const newId = await getLastNewCreatedId();
+    const postId = await getLastPostCreatedId();
 
     const inserSub = async (subject) => {
       console.log('Insert', subject);
-      console.log(newId);
+      console.log(postId);
       await createSubjectIfNotExsists(subject);
       const subjectId = await getSubjectId(subject);
       await connection.query(
@@ -168,7 +168,7 @@ const insertSubjectNew = async (subject) => {
             INSERT INTO subjects_news (news_id, subject_id) 
             VAlUES (?, ?)
             `,
-        [newId, subjectId]
+        [postId, subjectId]
       );
     };
 
@@ -178,7 +178,7 @@ const insertSubjectNew = async (subject) => {
   }
 };
 
-const updateNew = async (
+const updatePost = async (
   title,
   introduction,
   subject,
@@ -191,35 +191,35 @@ const updateNew = async (
   let connection;
 
   try {
-    console.log('[UPTADEENEW] =>', imageFileName);
+    console.log('[UPDATENEW] =>', imageFileName);
 
     connection = await getConnection();
 
-    const currentNew = await getNewById(id);
+    const currentPost = await getPostById(id);
 
     await connection.query(
       `
     UPDATE news SET title=?, introduction=?, body=?,  image=? WHERE id = ?
     `,
       [
-        title ?? currentNew.title,
-        introduction ?? currentNew.introduction,
-        body ?? currentNew.body,
-        imageFileName ?? currentNew.image,
+        title ?? currentPost.title,
+        introduction ?? currentPost.introduction,
+        body ?? currentPost.body,
+        imageFileName ?? currentPost.image,
         id,
       ]
     );
     //update subject
-    const newId = currentNew.id;
+    const postId = currentPost.id;
 
     if (subject !== undefined) {
       const currentSubjects = [subject, subject2 ?? 'none', subject3 ?? 'none'];
-      const currentSubject = await getCurrentIds(newId);
+      const currentSubject = await getCurrentIds(postId);
 
       const updateSub = async (subject = 'none', currentSubjectId = 'none') => {
         //paso el tema NUEVO por si no tiene id crearselo
         await createSubjectIfNotExsists(subject);
-        //regojo el ID del tema NUEVO
+        //recojo el ID del tema NUEVO
         const subjectId = await getSubjectId(subject);
         console.log(
           'currentSubjectId:',
@@ -233,7 +233,7 @@ const updateNew = async (
           UPDATE subjects_news SET  subject_id=? WHERE subject_id=? and news_id=?  
           
           `,
-          [subjectId, currentSubjectId, newId]
+          [subjectId, currentSubjectId, postId]
         );
       };
       console.log(currentSubjects);
@@ -250,7 +250,7 @@ const updateNew = async (
     if (connection) connection.release();
   }
 };
-const voteNews = async (type, newId, userId) => {
+const votePosts = async (type, postId, userId) => {
   let connection;
   try {
     connection = await getConnection();
@@ -270,7 +270,7 @@ const voteNews = async (type, newId, userId) => {
         `
         INSERT INTO votes_news(up_vote, down_vote, news_id, user_id) VALUES(1, 0, ?, ?);
         `,
-        [parseInt(newId), userId]
+        [parseInt(postId), userId]
       );
     }
     /* //si hay voto
@@ -299,7 +299,7 @@ const voteNews = async (type, newId, userId) => {
         `
           delete  FROM News_Server.votes_news where news_id = ? and user_id = ?;
           `,
-        [parseInt(newId), userId]
+        [parseInt(postId), userId]
       );
     }
   } catch (err) {
@@ -309,7 +309,7 @@ const voteNews = async (type, newId, userId) => {
   }
 };
 
-const getNewsByKeyword = async (searchParam) => {
+const getPostsByKeyword = async (searchParam) => {
   let connection;
 
   let finder = searchParam.toLowerCase();
@@ -317,7 +317,7 @@ const getNewsByKeyword = async (searchParam) => {
 
   try {
     connection = await getConnection();
-    const news = await connection.query(
+    const posts = await connection.query(
       ` 
     SELECT 
     news.id,
@@ -346,12 +346,12 @@ const getNewsByKeyword = async (searchParam) => {
       [`%${finder}%`]
     );
 
-    if (news[0].length === 0) {
+    if (posts[0].length === 0) {
       throw generateError('No hay ningún tema para listar', 500);
     }
 
-    console.log(news);
-    return news[0];
+    console.log(posts);
+    return posts[0];
   } finally {
     if (connection) connection.release();
   }
@@ -384,11 +384,11 @@ const getSubjectById = async (id) => {
   }
 };
 
-const getNewsBySubject = async (subject) => {
+const getPostsBySubject = async (subject) => {
   let connection;
   try {
     connection = await getConnection();
-    const news = await connection.query(
+    const posts = await connection.query(
       ` 
     SELECT 
     news.id,
@@ -414,19 +414,19 @@ const getNewsBySubject = async (subject) => {
     SUM(down_vote) as downVote
   FROM votes_news group by news_id ) s
   on news.id = s.news_id 
-  where subjects.subject = ?
+  where subjects.subject LIKE ?
   order by news.create_date DESC
     `,
-      [subject]
+      [`%${subject}%`]
     );
 
-    return news[0];
+    return posts[0];
   } finally {
     if (connection) connection.release();
   }
 };
 
-const getUsersVotes = async (newId, userId) => {
+const getUsersVotes = async (postId, userId) => {
   let connection;
   try {
     connection = await getConnection();
@@ -442,7 +442,7 @@ const getUsersVotes = async (newId, userId) => {
         ;
  
     `,
-      [newId, userId]
+      [postId, userId]
     );
 
     return votes[0];
@@ -451,11 +451,11 @@ const getUsersVotes = async (newId, userId) => {
   }
 };
 
-const getNewByUser = async (userId) => {
+const getPostByUser = async (userId) => {
   let connection;
   try {
     connection = await getConnection();
-    const news = await connection.query(
+    const posts = await connection.query(
       ` 
       SELECT 
       news.id,
@@ -487,23 +487,23 @@ const getNewByUser = async (userId) => {
       [userId]
     );
 
-    return news[0];
+    return posts[0];
   } finally {
     if (connection) connection.release();
   }
 };
 
 module.exports = {
-  getNewById,
-  getDeleteNewById,
-  createNew,
-  getNews,
-  voteNews,
-  updateNew,
-  getNewsByKeyword,
-  insertSubjectNew,
+  getPostById,
+  getDeletePostById,
+  createPost,
+  getPosts,
+  votePosts,
+  updatePost,
+  getPostsByKeyword,
+  insertSubjectPost,
   getSubjectById,
-  getNewsBySubject,
+  getPostsBySubject,
   getUsersVotes,
-  getNewByUser,
+  getPostByUser,
 };

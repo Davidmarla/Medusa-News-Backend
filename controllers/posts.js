@@ -10,33 +10,33 @@ const {
 } = require('../helpers');
 
 const {
-  getNewById,
-  getDeleteNewById,
-  createNew,
-  getNews,
-  voteNews,
-  updateNew,
-  getNewsByKeyword,
-  insertSubjectNew,
-  getNewsBySubject,
+  getPostById,
+  getDeletePostById,
+  createPost,
+  getPosts,
+  votePosts,
+  updatePost,
+  getPostsByKeyword,
+  insertSubjectPost,
+  getPostsBySubject,
   getUsersVotes,
-  getNewByUser,
-} = require('../db/news');
+  getPostByUser,
+} = require('../db/posts');
 
-const getNewsController = async (req, res, next) => {
+const getPostsController = async (req, res, next) => {
   try {
-    const news = await getNews();
+    const posts = await getPosts();
 
     res.send({
       status: 'ok',
-      data: news,
+      data: posts,
     });
   } catch (err) {
     next(err);
   }
 };
 
-const createNewController = async (req, res, next) => {
+const createPostController = async (req, res, next) => {
   try {
     console.log(req);
     const { title, introduction, subject, body } = req.body;
@@ -59,7 +59,7 @@ const createNewController = async (req, res, next) => {
     }
     await createSubjectIfNotExsists(subject);
 
-    await insertSubjectNew(subject);
+    await insertSubjectPost(subject);
 
     let imageFileName;
 
@@ -74,7 +74,7 @@ const createNewController = async (req, res, next) => {
       await image.toFile(path.join(imagesDir, imageFileName));
     }
 
-    const id = await createNew(
+    const id = await createPost(
       title,
       introduction,
       imageFileName,
@@ -91,10 +91,10 @@ const createNewController = async (req, res, next) => {
   }
 };
 
-const getSingleNewController = async (req, res, next) => {
+const getSinglePostController = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const newItem = await getNewById(id);
+    const newItem = await getPostById(id);
 
     res.send({
       status: 'ok',
@@ -105,7 +105,7 @@ const getSingleNewController = async (req, res, next) => {
   }
 };
 
-const searchNewController = async (req, res, next) => {
+const searchPostController = async (req, res, next) => {
   try {
     const searchParam = req.query.keyword;
 
@@ -113,7 +113,7 @@ const searchNewController = async (req, res, next) => {
       throw generateError('Introduzca un término de búsqueda', 400);
     }
 
-    const searchResult = await getNewsByKeyword(searchParam);
+    const searchResult = await getPostsByKeyword(searchParam);
 
     res.send({
       status: 'ok',
@@ -124,11 +124,11 @@ const searchNewController = async (req, res, next) => {
   }
 };
 
-const deleteNewController = async (req, res, next) => {
+const deletePostController = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const newItem = await getNewById(id);
+    const newItem = await getPostById(id);
     console.log(newItem);
     if (req.userId !== newItem.user_id) {
       throw generateError(
@@ -138,7 +138,7 @@ const deleteNewController = async (req, res, next) => {
       );
     }
 
-    await getDeleteNewById(id);
+    await getDeletePostById(id);
 
     res.send({
       status: 'ok',
@@ -149,7 +149,7 @@ const deleteNewController = async (req, res, next) => {
     next(error);
   }
 };
-const updateNewController = async (req, res, next) => {
+const updatePostController = async (req, res, next) => {
   try {
     const { title, introduction, subject, subject2, subject3, body } = req.body;
     const { id } = req.params;
@@ -174,7 +174,7 @@ const updateNewController = async (req, res, next) => {
       throw generateError(`${validation.error}`, 401);
     }
 
-    const newItem = await getNewById(id);
+    const newItem = await getPostById(id);
 
     if (newItem.user_id !== req.userId) {
       throw generateError('No tienes permiso para modificar esta noticia', 403);
@@ -196,7 +196,7 @@ const updateNewController = async (req, res, next) => {
     }
     console.log('[UPTADEENEWController] =>', imageFileName);
 
-    await updateNew(
+    await updatePost(
       title,
       introduction,
       subject,
@@ -215,13 +215,13 @@ const updateNewController = async (req, res, next) => {
   }
 };
 
-const voteNewController = async (req, res) => {
+const votePostController = async (req, res) => {
   try {
     const type = req.params.type;
     const newId = req.params.id;
     const userId = req.userId;
-    await getNewById(newId);
-    await voteNews(type, newId, userId);
+    await getPostById(newId);
+    await votePosts(type, newId, userId);
 
     res.send({
       status: 'ok',
@@ -232,14 +232,14 @@ const voteNewController = async (req, res) => {
   }
 };
 
-const getNewsBySubjectController = async (req, res, next) => {
+const getPostsBySubjectController = async (req, res, next) => {
   try {
     const subject = req.params.subject;
-    const news = await getNewsBySubject(subject);
+    const posts = await getPostsBySubject(subject);
 
     res.send({
       status: 'ok',
-      data: news,
+      data: posts,
     });
   } catch (error) {
     next(error);
@@ -248,9 +248,9 @@ const getNewsBySubjectController = async (req, res, next) => {
 
 const getUsersVotesController = async (req, res, next) => {
   try {
-    const newId = req.params.id;
+    const postId = req.params.id;
     const userId = req.params.userId;
-    const votes = await getUsersVotes(newId, userId);
+    const votes = await getUsersVotes(postId, userId);
     console.log('[getUsersVotesController]: ', votes);
     if (votes.length) {
       res.send({
@@ -270,14 +270,14 @@ const getUsersVotesController = async (req, res, next) => {
   }
 };
 
-const getNewsByUserController = async (req, res, next) => {
+const getPostsByUserController = async (req, res, next) => {
   try {
     const userId = req.params.userId;
-    const news = await getNewByUser(userId);
+    const posts = await getPostByUser(userId);
 
     res.send({
       status: 'ok',
-      data: news,
+      data: posts,
     });
   } catch (error) {
     next(error);
@@ -285,14 +285,14 @@ const getNewsByUserController = async (req, res, next) => {
 };
 
 module.exports = {
-  getNewsController,
-  createNewController,
-  getSingleNewController,
-  deleteNewController,
-  updateNewController,
-  searchNewController,
-  voteNewController,
-  getNewsBySubjectController,
+  getPostsController,
+  createPostController,
+  getSinglePostController,
+  deletePostController,
+  updatePostController,
+  searchPostController,
+  votePostController,
+  getPostsBySubjectController,
   getUsersVotesController,
-  getNewsByUserController,
+  getPostsByUserController,
 };

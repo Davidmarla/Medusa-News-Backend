@@ -7,17 +7,17 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const port = 8888;
 const {
-  getNewsController,
-  createNewController,
-  getSingleNewController,
-  deleteNewController,
-  updateNewController,
-  voteNewController,
-  searchNewController,
-  getNewsBySubjectController,
+  getPostsController,
+  createPostController,
+  getSinglePostController,
+  deletePostController,
+  updatePostController,
+  votePostController,
+  searchPostController,
+  getPostsBySubjectController,
   getUsersVotesController,
-  getNewsByUserController,
-} = require('./controllers/news');
+  getPostsByUserController,
+} = require('./controllers/posts');
 const app = express();
 
 const {
@@ -42,18 +42,18 @@ app.post('/register', newUserController);
 app.post('/login', loginController);
 app.get('/user/:id', getUserController);
 app.get('/user', authUser, getMeController);
-app.put('/profile/:id', authUser, updateUserProfile); // REVISAR ENDPOINT TODO:
+app.put('/editProfile/:id', authUser, updateUserProfile);
 
 //Endpoints de noticias
-app.get('/', getNewsController);
-app.post('/', authUser, createNewController);
-app.get('/new/:id', getSingleNewController);
-app.delete('/new/:id', authUser, deleteNewController);
-app.get('/newUser/:userId', getNewsByUserController);
-app.put('/new/:id', authUser, updateNewController);
-app.get('/search', searchNewController);
-app.put('/:id/:type', authUser, voteNewController);
-app.get('/subject/:subject', getNewsBySubjectController);
+app.get('/', getPostsController);
+app.post('/', authUser, createPostController);
+app.get('/new/:id', getSinglePostController);
+app.delete('/new/:id', authUser, deletePostController);
+app.get('/newUser/:userId', getPostsByUserController);
+app.put('/new/:id', authUser, updatePostController);
+app.get('/search', searchPostController);
+app.put('/:id/:type', authUser, votePostController);
+app.get('/subject/:subject', getPostsBySubjectController);
 app.get('/infoVotes/:id/:userId', getUsersVotesController);
 
 //Middleware que gestiona rutas no definidas

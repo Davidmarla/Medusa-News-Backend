@@ -155,7 +155,7 @@ const updateUserProfile = async (req, res, next) => {
         .min(3)
         .max(100)
         .error(
-          generateError('Nombre mín. 10 caracteres, máx. 100 caracteres', 400)
+          generateError('Nombre mín. 3 caracteres, máx. 100 caracteres', 400)
         ),
       updatedBio: joi
         .string()
@@ -243,15 +243,7 @@ const getMeController = async (req, res, next) => {
 
     res.send({
       status: 'ok',
-      data: {
-        id: user.id,
-        user_name: user.user_name,
-        name: user.name,
-        email: user.email,
-        bio: user.bio,
-        avatar: user.profile_image,
-        createdAt: user.created_at,
-      },
+      data: user,
     });
   } catch (error) {
     next(error);
