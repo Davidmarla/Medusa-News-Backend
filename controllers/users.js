@@ -131,9 +131,9 @@ const updateUserProfile = async (req, res, next) => {
       throw generateError('No tienes permisos para editar este usuario', 403);
     }
 
-    let updatedProfileImage;
+    let updatedProfileImage = currentUser[0].profile_image;
 
-    if (req.files) {
+    if (req.files && req.files.image) {
       try {
         // Procesar y guardar imagen
         updatedProfileImage = await processAndSaveImage(req.files.image);
@@ -170,10 +170,12 @@ const updateUserProfile = async (req, res, next) => {
       updatedPassword1: joi
         .string()
         .min(8)
+        .allow('')
         .error(generateError('Password mín. 8 caracteres', 400)),
       updatedPassword2: joi
         .string()
         .min(8)
+        .allow('')
         .error(generateError('Password mín. 8 caracteres', 400)),
     });
 
