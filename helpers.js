@@ -111,7 +111,7 @@ const getCurrentIds = async (newId) => {
   }
 };
 
-const getLastNewCreatedId = async () => {
+const getLastPostCreatedId = async () => {
   let connection;
   try {
     connection = await getConnection();
@@ -138,6 +138,6 @@ module.exports = {
   processAndSaveImage,
   createSubjectIfNotExsists,
   getSubjectId,
-  getLastNewCreatedId,
+  getLastPostCreatedId,
   getCurrentIds,
 };

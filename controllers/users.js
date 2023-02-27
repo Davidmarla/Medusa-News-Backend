@@ -42,7 +42,6 @@ const newUserController = async (req, res, next) => {
     }
 
     const id = await createUser(user_name, email, password);
-    console.log(id);
 
     res.send({
       status: 'ok',
@@ -115,8 +114,6 @@ const updateUserProfile = async (req, res, next) => {
     const { id } = req.params;
     const { name, bio, password1, password2 } = req.body;
 
-    console.log(Number(id), req.userId);
-
     const [currentUser] = await connection.query(
       `
       SELECT id, name, bio, profile_image, password
@@ -155,10 +152,10 @@ const updateUserProfile = async (req, res, next) => {
     const schema = joi.object().keys({
       updatedName: joi
         .string()
-        .min(10)
+        .min(3)
         .max(100)
         .error(
-          generateError('Nombre mín. 10 caracteres, máx. 100 caracteres', 400)
+          generateError('Nombre mín. 3 caracteres, máx. 100 caracteres', 400)
         ),
       updatedBio: joi
         .string()
