@@ -142,7 +142,6 @@ const createPost = async (
       `,
       [title, introduction, imageFileName ?? '', body, userId]
     );
-    console.log(result);
 
     return result.insertId;
   } catch (err) {
@@ -159,8 +158,6 @@ const insertSubjectPost = async (subject) => {
     const postId = await getLastPostCreatedId();
 
     const inserSub = async (subject) => {
-      console.log('Insert', subject);
-      console.log(postId);
       await createSubjectIfNotExsists(subject);
       const subjectId = await getSubjectId(subject);
       await connection.query(
@@ -178,20 +175,18 @@ const insertSubjectPost = async (subject) => {
   }
 };
 
-const updatePost = async (
+const updatePost = async ({
   title,
   introduction,
-  subject,
-  subject2,
-  subject3,
   imageFileName = '',
+  subject,
   body,
-  id
-) => {
+  id,
+}) => {
   let connection;
 
   try {
-    console.log('[UPDATENEW] =>', imageFileName);
+    console.log('[UPDATENEW IMG] =>', imageFileName);
 
     connection = await getConnection();
 
@@ -213,7 +208,7 @@ const updatePost = async (
     const postId = currentPost.id;
 
     if (subject !== undefined) {
-      const currentSubjects = [subject, subject2 ?? 'none', subject3 ?? 'none'];
+      const currentSubjects = [subject];
       const currentSubject = await getCurrentIds(postId);
 
       const updateSub = async (subject = 'none', currentSubjectId = 'none') => {
@@ -221,12 +216,6 @@ const updatePost = async (
         await createSubjectIfNotExsists(subject);
         //recojo el ID del tema NUEVO
         const subjectId = await getSubjectId(subject);
-        console.log(
-          'currentSubjectId:',
-          currentSubjectId,
-          'subjectId:',
-          subjectId
-        );
 
         await connection.query(
           `
@@ -236,15 +225,14 @@ const updatePost = async (
           [subjectId, currentSubjectId, postId]
         );
       };
-      console.log(currentSubjects);
+
       currentSubjects.map((subject, i) => {
         const currentSubjectId = currentSubject[i].subject_id ?? 1;
-        console.log('dentro de map [i]:', i, currentSubject[i].subject_id);
+
         updateSub(subject, currentSubjectId);
       });
     }
   } catch (err) {
-    console.log(err);
     throw generateError('Error en la base de datos', 500);
   } finally {
     if (connection) connection.release();
@@ -313,7 +301,6 @@ const getPostsByKeyword = async (searchParam) => {
   let connection;
 
   let finder = searchParam.toLowerCase();
-  console.log(finder, searchParam);
 
   try {
     connection = await getConnection();
@@ -350,7 +337,6 @@ const getPostsByKeyword = async (searchParam) => {
       throw generateError('No hay ningún tema para listar', 500);
     }
 
-    console.log(posts);
     return posts[0];
   } finally {
     if (connection) connection.release();
