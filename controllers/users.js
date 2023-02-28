@@ -154,6 +154,7 @@ const updateUserProfile = async (req, res, next) => {
         .string()
         .min(3)
         .max(100)
+        .allow('')
         .error(
           generateError('Nombre mín. 3 caracteres, máx. 100 caracteres', 400)
         ),
@@ -161,6 +162,7 @@ const updateUserProfile = async (req, res, next) => {
         .string()
         .min(25)
         .max(500)
+        .allow('')
         .error(
           generateError(
             'Biografía mín. 25 caracteres, máx. 500 caracteres',

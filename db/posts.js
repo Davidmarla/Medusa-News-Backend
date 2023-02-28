@@ -468,6 +468,7 @@ const getPostByUser = async (userId) => {
     FROM votes_news group by news_id ) s
     on news.id = s.news_id 
     where news.user_id = ?
+    order by news.create_date DESC
  
     `,
       [userId]
