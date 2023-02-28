@@ -38,7 +38,6 @@ const getPostsController = async (req, res, next) => {
 
 const createPostController = async (req, res, next) => {
   try {
-    console.log(req);
     const { title, introduction, subject, body } = req.body;
     const userId = req.userId;
     const schema = joi.object().keys({
@@ -151,7 +150,7 @@ const deletePostController = async (req, res, next) => {
 };
 const updatePostController = async (req, res, next) => {
   try {
-    const { title, introduction, subject, subject2, subject3, body } = req.body;
+    const { title, introduction, subject, body } = req.body;
     const { id } = req.params;
     //validar con joi
     const schema = joi.object().keys({
@@ -159,14 +158,10 @@ const updatePostController = async (req, res, next) => {
       body: joi.string(),
       introduction: joi.string().max(300),
       subject: joi.string().max(25),
-      subject2: joi.string().max(25),
-      subject3: joi.string().max(25),
     });
     const validation = await schema.validateAsync({
       title,
       subject,
-      subject2,
-      subject3,
       body,
     });
 
@@ -196,16 +191,14 @@ const updatePostController = async (req, res, next) => {
     }
     console.log('[UPTADEENEWController] =>', imageFileName);
 
-    await updatePost(
+    await updatePost({
       title,
       introduction,
+      imageFileName,
       subject,
-      subject2,
-      subject3,
-      (imageFileName = ''),
       body,
-      id
-    );
+      id,
+    });
     res.send({
       status: 'ok',
       message: `La Noticia ha sido modificada.`,
@@ -251,7 +244,7 @@ const getUsersVotesController = async (req, res, next) => {
     const postId = req.params.id;
     const userId = req.params.userId;
     const votes = await getUsersVotes(postId, userId);
-    console.log('[getUsersVotesController]: ', votes);
+    // console.log('[getUsersVotesController]: ', votes);
     if (votes.length) {
       res.send({
         status: 'ok',
