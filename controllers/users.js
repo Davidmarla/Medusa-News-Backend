@@ -152,7 +152,7 @@ const updateUserProfile = async (req, res, next) => {
     const schema = joi.object().keys({
       updatedName: joi
         .string()
-        .min(3)
+        .min(0)
         .max(100)
         .allow('')
         .error(
@@ -160,7 +160,7 @@ const updateUserProfile = async (req, res, next) => {
         ),
       updatedBio: joi
         .string()
-        .min(25)
+        .min(0)
         .max(500)
         .allow('')
         .error(

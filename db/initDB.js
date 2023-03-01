@@ -24,12 +24,12 @@ async function main() {
     await connection.query(`
       CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTO_INCREMENT,
-        name VARCHAR(100),
+        name VARCHAR(100) DEFAULT " ",
         user_name VARCHAR(50) UNIQUE NOT NULL,
         email VARCHAR(100) UNIQUE NOT NULL,
         password VARCHAR(100) NOT NULL,
         role VARCHAR(25) DEFAULT "user",
-        bio VARCHAR(500),
+        bio VARCHAR(500) DEFAULT " ",
         profile_image VARCHAR(100),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         last_updated DATETIME null
