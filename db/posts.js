@@ -156,7 +156,8 @@ const insertSubjectPost = async (subject) => {
   try {
     connection = await getConnection();
     const postId = await getLastPostCreatedId();
-    const last = postId + 1;
+    const lastId = postId + 1;
+    
     const inserSub = async (subject) => {
       await createSubjectIfNotExsists(subject);
       const subjectId = await getSubjectId(subject);
@@ -165,7 +166,7 @@ const insertSubjectPost = async (subject) => {
             INSERT INTO subjects_news (news_id, subject_id) 
             VAlUES (?, ?)
             `,
-        [last, subjectId]
+        [lastId, subjectId]
       );
     };
 
