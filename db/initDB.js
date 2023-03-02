@@ -60,8 +60,7 @@ async function main() {
       id INTEGER PRIMARY KEY AUTO_INCREMENT,
       subject_id INTEGER NOT NULL,
       news_id INTEGER NOT NULL,
-      FOREIGN KEY (subject_id) REFERENCES subjects(id),
-      FOREIGN KEY (news_id) REFERENCES news(id)
+      FOREIGN KEY (subject_id) REFERENCES subjects(id)
     )`);
 
     await connection.query(`

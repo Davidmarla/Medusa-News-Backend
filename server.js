@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const { authUser } = require('./middlewares/auth');
+const { checkTokenExpiration } = require('./middlewares/checkTokenExpiration');
 const fileUpload = require('express-fileupload');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -41,18 +42,18 @@ app.use('/uploads', express.static('./uploads'));
 app.post('/register', newUserController);
 app.post('/login', loginController);
 app.get('/user/:id', getUserController);
-app.get('/user', authUser, getMeController);
-app.put('/editProfile/:id', authUser, updateUserProfile);
+app.get('/user', authUser, checkTokenExpiration, getMeController);
+app.put('/editProfile/:id', authUser, checkTokenExpiration, updateUserProfile);
 
 //Endpoints de noticias
 app.get('/', getPostsController);
-app.post('/', authUser, createPostController);
+app.post('/', authUser, checkTokenExpiration, createPostController);
 app.get('/new/:id', getSinglePostController);
-app.delete('/new/:id', authUser, deletePostController);
+app.delete('/new/:id', authUser, checkTokenExpiration, deletePostController);
 app.get('/newUser/:userId', getPostsByUserController);
-app.put('/new/:id', authUser, updatePostController);
+app.put('/new/:id', authUser, checkTokenExpiration, updatePostController);
 app.get('/search', searchPostController);
-app.put('/:id/:type', authUser, votePostController);
+app.put('/:id/:type', authUser, checkTokenExpiration, votePostController);
 app.get('/subject/:subject', getPostsBySubjectController);
 app.get('/infoVotes/:id/:userId', getUsersVotesController);
 
