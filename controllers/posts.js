@@ -41,10 +41,37 @@ const createPostController = async (req, res, next) => {
     const { title, introduction, subject, body } = req.body;
     const userId = req.userId;
     const schema = joi.object().keys({
-      title: joi.string().max(150).required(),
-      introduction: joi.string().max(300).required(),
-      subject: joi.string().max(25).required(),
-      body: joi.string().required(),
+      title: joi
+        .string()
+        .max(150)
+        .required()
+        .error(
+          new Error(
+            'El titulo no puede estar vacio ni contener más de 150 caracteres'
+          )
+        ),
+      introduction: joi
+        .string()
+        .max(300)
+        .required()
+        .error(
+          new Error(
+            'La introducción no puede estar vacia ni contener más de 300 caracteres'
+          )
+        ),
+      subject: joi
+        .string()
+        .max(25)
+        .required()
+        .error(
+          new Error(
+            'El tema no puede estar vacio ni contener más de 25 caracteres'
+          )
+        ),
+      body: joi
+        .string()
+        .required()
+        .error(new Error('El texto no puede estar vacio')),
     });
 
     const validation = await schema.validateAsync({
@@ -154,10 +181,37 @@ const updatePostController = async (req, res, next) => {
     const { id } = req.params;
     //validar con joi
     const schema = joi.object().keys({
-      title: joi.string().max(150),
-      body: joi.string(),
-      introduction: joi.string().max(300),
-      subject: joi.string().max(25),
+      title: joi
+        .string()
+        .max(150)
+        .required()
+        .error(
+          new Error(
+            'El titulo no puede estar vacio ni contener más de 150 caracteres'
+          )
+        ),
+      introduction: joi
+        .string()
+        .max(300)
+        .required()
+        .error(
+          new Error(
+            'La introducción no puede estar vacia ni contener más de 300 caracteres'
+          )
+        ),
+      subject: joi
+        .string()
+        .max(25)
+        .required()
+        .error(
+          new Error(
+            'El tema no puede estar vacio ni contener más de 25 caracteres'
+          )
+        ),
+      body: joi
+        .string()
+        .required()
+        .error(new Error('El texto no puede estar vacio')),
     });
     const validation = await schema.validateAsync({
       title,
@@ -165,7 +219,6 @@ const updatePostController = async (req, res, next) => {
       introduction,
       body,
     });
-
     if (validation.error) {
       throw generateError(`${validation.error}`, 401);
     }
@@ -190,12 +243,16 @@ const updatePostController = async (req, res, next) => {
       imageFileName = `${nanoid(30)}.jpg`;
       await image.toFile(path.join(imagesDir, imageFileName));
     }
-    console.log('[UPTADEENEWController] =>', {
-      title,
-      introduction,
-      body,
-      subject,
-    });
+    console.log(
+      '[UPTADEENEWController] =>',
+      {
+        title,
+        introduction,
+        body,
+        subject,
+      },
+      'hola estoy roto'
+    );
 
     await updatePost({
       title,
