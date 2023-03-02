@@ -150,7 +150,7 @@ const deletePostController = async (req, res, next) => {
 };
 const updatePostController = async (req, res, next) => {
   try {
-    const { title, introduction, subject, body } = req.body;
+    const { title, introduction, body, subject } = req.body;
     const { id } = req.params;
     //validar con joi
     const schema = joi.object().keys({
@@ -162,6 +162,7 @@ const updatePostController = async (req, res, next) => {
     const validation = await schema.validateAsync({
       title,
       subject,
+      introduction,
       body,
     });
 
@@ -189,16 +190,22 @@ const updatePostController = async (req, res, next) => {
       imageFileName = `${nanoid(30)}.jpg`;
       await image.toFile(path.join(imagesDir, imageFileName));
     }
-    console.log('[UPTADEENEWController] =>', imageFileName);
+    console.log('[UPTADEENEWController] =>', {
+      title,
+      introduction,
+      body,
+      subject,
+    });
 
     await updatePost({
       title,
-      introduction,
       imageFileName,
-      subject,
+      introduction,
       body,
+      subject,
       id,
     });
+    console.log('paso');
     res.send({
       status: 'ok',
       message: `La Noticia ha sido modificada.`,

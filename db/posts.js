@@ -156,7 +156,7 @@ const insertSubjectPost = async (subject) => {
   try {
     connection = await getConnection();
     const postId = await getLastPostCreatedId();
-
+    const last = postId + 1;
     const inserSub = async (subject) => {
       await createSubjectIfNotExsists(subject);
       const subjectId = await getSubjectId(subject);
@@ -165,7 +165,7 @@ const insertSubjectPost = async (subject) => {
             INSERT INTO subjects_news (news_id, subject_id) 
             VAlUES (?, ?)
             `,
-        [postId, subjectId]
+        [last, subjectId]
       );
     };
 
@@ -177,20 +177,30 @@ const insertSubjectPost = async (subject) => {
 
 const updatePost = async ({
   title,
-  introduction,
   imageFileName = '',
-  subject,
+  introduction,
   body,
+  subject,
   id,
 }) => {
   let connection;
 
   try {
-    console.log('[UPDATENEW IMG] =>', imageFileName);
-
     connection = await getConnection();
 
     const currentPost = await getPostById(id);
+    console.log(
+      '[UPDATENEW] =>',
+      {
+        title,
+        imageFileName,
+        introduction,
+        body,
+        subject,
+        id,
+      },
+      currentPost
+    );
 
     await connection.query(
       `
