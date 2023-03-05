@@ -243,16 +243,6 @@ const updatePostController = async (req, res, next) => {
       imageFileName = `${nanoid(30)}.jpg`;
       await image.toFile(path.join(imagesDir, imageFileName));
     }
-    console.log(
-      '[UPTADEENEWController] =>',
-      {
-        title,
-        introduction,
-        body,
-        subject,
-      },
-      'hola estoy roto'
-    );
 
     await updatePost({
       title,
