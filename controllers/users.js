@@ -3,7 +3,7 @@ const joi = require('joi');
 const jwt = require('jsonwebtoken');
 
 const { generateError, processAndSaveImage } = require('../helpers');
-const { createUser, getUserByEmail } = require('../db/users');
+const { createUser, getUserByEmail, getUserById } = require('../db/users');
 const { getConnection } = require('../db/db');
 
 const newUserController = async (req, res, next) => {
@@ -42,7 +42,6 @@ const newUserController = async (req, res, next) => {
     }
 
     const id = await createUser(user_name, email, password);
-    console.log(id);
 
     res.send({
       status: 'ok',
@@ -99,6 +98,7 @@ const loginController = async (req, res, next) => {
     res.send({
       status: 'ok',
       data: token,
+      userName: user.user_name,
     });
   } catch (error) {
     next(error);
@@ -114,11 +114,9 @@ const updateUserProfile = async (req, res, next) => {
     const { id } = req.params;
     const { name, bio, password1, password2 } = req.body;
 
-    console.log(Number(id), req.userId);
-
     const [currentUser] = await connection.query(
       `
-      SELECT id, name, bio, profile_image
+      SELECT id, name, bio, profile_image, password
       FROM users
       WHERE id = ?;
       `,
@@ -133,9 +131,9 @@ const updateUserProfile = async (req, res, next) => {
       throw generateError('No tienes permisos para editar este usuario', 403);
     }
 
-    let updatedProfileImage;
+    let updatedProfileImage = currentUser[0].profile_image;
 
-    if (req.files) {
+    if (req.files && req.files.image) {
       try {
         // Procesar y guardar imagen
         updatedProfileImage = await processAndSaveImage(req.files.image);
@@ -154,25 +152,32 @@ const updateUserProfile = async (req, res, next) => {
     const schema = joi.object().keys({
       updatedName: joi
         .string()
-        .min(10)
+        .min(0)
         .max(100)
+        .allow('')
         .error(
-          generateError('Nombre mín. 10 caracteres, máx. 100 caracteres', 400)
+          generateError('Nombre mín. 3 caracteres, máx. 100 caracteres', 400)
         ),
       updatedBio: joi
         .string()
-        .min(25)
+        .min(0)
         .max(500)
+        .allow('')
         .error(
-          generateError('Biografía mín. 25 caracteres, máx. 50 caracteres', 400)
+          generateError(
+            'Biografía mín. 25 caracteres, máx. 500 caracteres',
+            400
+          )
         ),
       updatedPassword1: joi
         .string()
         .min(8)
+        .allow('')
         .error(generateError('Password mín. 8 caracteres', 400)),
       updatedPassword2: joi
         .string()
         .min(8)
+        .allow('')
         .error(generateError('Password mín. 8 caracteres', 400)),
     });
 
@@ -187,14 +192,20 @@ const updateUserProfile = async (req, res, next) => {
       throw generateError('Las contraseñas no coinciden');
     }
 
-    const passwordHash = await bcrypt.hash(updatedPassword1, 8);
+    let passwordHash;
 
-    console.log(updatedName, updatedBio, passwordHash, updatedProfileImage, id);
+    if (updatedPassword1) {
+      passwordHash = await bcrypt.hash(updatedPassword1, 8);
+    } else {
+      passwordHash = currentUser[0].password;
+    }
+
+    //console.log(updatedName, updatedBio, passwordHash, updatedProfileImage, id);
 
     try {
       await connection.query(
         `UPDATE users 
-      SET name = ?, bio = ?, password = ?, profile_image = ?
+      SET name = ?, bio = ?, password = ?, profile_image = ?, last_updated = CURRENT_TIMESTAMP
       WHERE id = ?
       `,
         [updatedName, updatedBio, passwordHash, updatedProfileImage, id]
@@ -215,8 +226,38 @@ const updateUserProfile = async (req, res, next) => {
   }
 };
 
+const getUserController = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const user = await getUserById(id);
+
+    res.send({
+      status: 'ok',
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getMeController = async (req, res, next) => {
+  try {
+    const user = await getUserById(req.userId, false);
+
+    res.send({
+      status: 'ok',
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   newUserController,
   loginController,
   updateUserProfile,
+  getUserController,
+  getMeController,
 };

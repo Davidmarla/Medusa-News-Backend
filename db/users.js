@@ -79,7 +79,31 @@ const createUser = async (user_name, email, password) => {
   }
 };
 
+const getUserById = async (id) => {
+  let connection;
+
+  try {
+    connection = await getConnection();
+
+    const [result] = await connection.query(
+      `
+      SELECT id, name, email, user_name, bio, profile_image, created_at FROM users WHERE id = ?
+    `,
+      [id]
+    );
+
+    if (result.length === 0) {
+      throw generateError('No hay ningún usuario con esa id', 404);
+    }
+
+    return result[0];
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
 module.exports = {
   createUser,
   getUserByEmail,
+  getUserById,
 };

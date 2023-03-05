@@ -14,7 +14,7 @@ const authUser = (req, res, next) => {
     try {
       token = jwt.verify(authorization, process.env.SECRET);
     } catch {
-      throw generateError('Token incorrecto, 401');
+      throw generateError('Token incorrecto', 401);
     }
     //console.log(token);
 

@@ -24,14 +24,15 @@ async function main() {
     await connection.query(`
       CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTO_INCREMENT,
-        name VARCHAR(100),
+        name VARCHAR(100) DEFAULT " ",
         user_name VARCHAR(50) UNIQUE NOT NULL,
         email VARCHAR(100) UNIQUE NOT NULL,
         password VARCHAR(100) NOT NULL,
         role VARCHAR(25) DEFAULT "user",
-        bio VARCHAR(500),
+        bio VARCHAR(500) DEFAULT " ",
         profile_image VARCHAR(100),
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        last_updated DATETIME null
       );
     `);
 
@@ -59,8 +60,7 @@ async function main() {
       id INTEGER PRIMARY KEY AUTO_INCREMENT,
       subject_id INTEGER NOT NULL,
       news_id INTEGER NOT NULL,
-      FOREIGN KEY (subject_id) REFERENCES subjects(id),
-      FOREIGN KEY (news_id) REFERENCES news(id)
+      FOREIGN KEY (subject_id) REFERENCES subjects(id)
     )`);
 
     await connection.query(`
@@ -172,43 +172,23 @@ async function main() {
       VALUES
       (1, 0, 1, 1),
       (1, 0, 1, 3),
-      (0, 1, 1, 2),
       (1, 0, 1, 4),
-      (0, 1, 1, 5),
-      (0, 1, 1, 6),
       (1, 0, 1, 7),
-
-      (0, 1, 2, 1),
+   
       (1, 0, 2, 3),
-      (0, 1, 2, 2),
       (1, 0, 2, 4),
-      (0, 1, 2, 5),
       (1, 0, 2, 6),
-      (0, 1, 2, 7),
-
-      (0, 1, 3, 1),
-      (1, 0, 3, 3),
-      (0, 1, 3, 2),
+     
       (1, 0, 3, 4),
-      (0, 1, 3, 5),
-      (0, 1, 3, 6),
       (1, 0, 3, 7),
 
-      (0, 1, 4, 1),
-      (1, 0, 4, 3),
-      (0, 1, 4, 2),
+      (1, 0, 4, 3), 
       (1, 0, 4, 4),
-      (0, 1, 4, 5),
-      (0, 1, 4, 6),
       (1, 0, 4, 7),
-
-      (0, 1, 5, 1),
+ 
       (1, 0, 5, 3),
-      (0, 1, 5, 2),
       (1, 0, 5, 4),
-      (0, 1, 5, 5),
-      (1, 0, 5, 6),
-      (0, 1, 5, 7);
+      (1, 0, 5, 6)
 
       `
       );

@@ -2,25 +2,31 @@ require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const { authUser } = require('./middlewares/auth');
+const { checkTokenExpiration } = require('./middlewares/checkTokenExpiration');
 const fileUpload = require('express-fileupload');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const port = 8888;
 const {
-  getNewsController,
-  createNewController,
-  getSingleNewController,
-  deleteNewController,
-  updateNewController,
-  voteNewController,
-  searchNewController,
-} = require('./controllers/news');
+  getPostsController,
+  createPostController,
+  getSinglePostController,
+  deletePostController,
+  updatePostController,
+  votePostController,
+  searchPostController,
+  getPostsBySubjectController,
+  getUsersVotesController,
+  getPostsByUserController,
+} = require('./controllers/posts');
 const app = express();
 
 const {
   newUserController,
   loginController,
   updateUserProfile,
+  getUserController,
+  getMeController,
 } = require('./controllers/users');
 
 app.use(cors());
@@ -30,21 +36,26 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 app.use(fileUpload());
-app.use('./images', express.static('./images'));
+app.use('/uploads', express.static('./uploads'));
 
 //Endpoints de usuario
-app.post('/user', newUserController);
+app.post('/register', newUserController);
 app.post('/login', loginController);
-app.put('/profile/:id', authUser, updateUserProfile);
+app.get('/user/:id', getUserController);
+app.get('/user', authUser, checkTokenExpiration, getMeController);
+app.put('/editProfile/:id', authUser, checkTokenExpiration, updateUserProfile);
 
 //Endpoints de noticias
-app.get('/', getNewsController);
-app.post('/', authUser, createNewController);
-app.get('/new/:id', getSingleNewController);
-app.delete('/new/:id', authUser, deleteNewController);
-app.put('/new/:id', authUser, updateNewController);
-app.get('/search', searchNewController);
-app.put('/:id/:type', authUser, voteNewController);
+app.get('/', getPostsController);
+app.post('/', authUser, checkTokenExpiration, createPostController);
+app.get('/new/:id', getSinglePostController);
+app.delete('/new/:id', authUser, checkTokenExpiration, deletePostController);
+app.get('/newUser/:userId', getPostsByUserController);
+app.put('/new/:id', authUser, checkTokenExpiration, updatePostController);
+app.get('/search', searchPostController);
+app.put('/:id/:type', authUser, checkTokenExpiration, votePostController);
+app.get('/subject/:subject', getPostsBySubjectController);
+app.get('/infoVotes/:id/:userId', getUsersVotesController);
 
 //Middleware que gestiona rutas no definidas
 app.use((req, res) => {
