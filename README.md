@@ -74,8 +74,10 @@ Ahora desde este [enlace](https://lively-escape-602067.postman.co/workspace/Proy
 
 ### De usuario
 
-- '/user' Permite hacer el registro de un usuario (POST)
+- '/register' Permite hacer el registro de un usuario (POST)
 - '/login' Para hacer login y devuelve un token de usuario (POST)
+- '/user' Muestra los datos del usuario logueado (GET)
+- '/user/:id' Muestra los datos del usuario con esa id (GET)
 - '/profile/:id' Permite editar los datos de usuario (Nombre, biografía, password) (PUT)
 
 ### De noticias
