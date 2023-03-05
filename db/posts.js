@@ -133,6 +133,7 @@ const createPost = async (
 ) => {
   let connection;
   try {
+    console.log('POST', { title, introduction, imageFileName, body, userId });
     connection = await getConnection();
 
     const [result] = await connection.query(
@@ -157,7 +158,7 @@ const insertSubjectPost = async (subject) => {
     connection = await getConnection();
     const postId = await getLastPostCreatedId();
     const lastId = postId + 1;
-    
+
     const inserSub = async (subject) => {
       await createSubjectIfNotExsists(subject);
       const subjectId = await getSubjectId(subject);
@@ -178,7 +179,7 @@ const insertSubjectPost = async (subject) => {
 
 const updatePost = async ({
   title,
-  imageFileName = '',
+  imageFileName,
   introduction,
   body,
   subject,
@@ -190,8 +191,9 @@ const updatePost = async ({
     connection = await getConnection();
 
     const currentPost = await getPostById(id);
-    console.log(
+    /*   console.log(
       '[UPDATENEW] =>',
+      'NOTICIA MODIFICADA',
       {
         title,
         imageFileName,
@@ -200,8 +202,9 @@ const updatePost = async ({
         subject,
         id,
       },
+      'NOTICIA ORIGINAL',
       currentPost
-    );
+    ); */
 
     await connection.query(
       `
@@ -237,11 +240,9 @@ const updatePost = async ({
         );
       };
 
-      currentSubjects.map((subject, i) => {
-        const currentSubjectId = currentSubject[i].subject_id ?? 1;
+      const currentSubjectId = currentSubject.subject_id ?? 1;
 
-        updateSub(subject, currentSubjectId);
-      });
+      updateSub(subject, currentSubjectId);
     }
   } catch (err) {
     throw generateError('Error en la base de datos', 500);
